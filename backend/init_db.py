@@ -1,18 +1,33 @@
-# backend/init_db.py
+# init_db.py
 from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
+from contextlib import contextmanager
 
 # Define the SQLite database
 engine = create_engine('sqlite:///../database/lieferspatz.db')
 Base = declarative_base()
 
+# Define sessionmaker bound to the engine
+Session = sessionmaker(bind=engine)
+
+@contextmanager
+def get_db_session():
+    """Provide a transactional scope around a series of operations."""
+    db_session = Session()
+    try:
+        yield db_session
+    finally:
+        db_session.close()
+
 # Define models
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
+    username = Column(String, unique=True, nullable=False)
     name = Column(String)
     address = Column(String)
-    orders = relationship("Order", back_populates="user")  # Link to orders
+    password = Column(String, nullable=False)
+    orders = relationship("Order", back_populates="user")
 
 class Restaurant(Base):
     __tablename__ = 'restaurants'
@@ -21,7 +36,7 @@ class Restaurant(Base):
     address = Column(String)
     description = Column(String)
     menu_items = relationship("MenuItem", order_by="MenuItem.id", back_populates="restaurant")
-    orders = relationship("Order", back_populates="restaurant")  # Link to orders
+    orders = relationship("Order", back_populates="restaurant")
 
 class MenuItem(Base):
     __tablename__ = 'menu_items'

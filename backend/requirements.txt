@@ -2,4 +2,4 @@ Flask
 sqlalchemy
 marshmallow
 flask_cors
-PyJWT
+PyJWTmarshmallow
