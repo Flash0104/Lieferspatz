@@ -1,5 +1,0 @@
-Flask
-sqlalchemy
-marshmallow
-flask_cors
-PyJWTmarshmallow

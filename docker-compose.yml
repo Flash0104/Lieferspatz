@@ -1,7 +1,0 @@
-services:
-  web:
-    build: .
-    ports:
-      - "80:5001"  # Map port 80 on the host to port 5001 in the container
-    extra_hosts:
-      - "lieferspatz.com:127.0.0.1"
