@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <title>Lieferspatz</title>
+</head>
+
+<body class="bg-gray-100 font-sans">
+    
+    
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-teal-400 to-teal-600 text-white py-4">
+        <div class="container mx-auto flex items-center justify-between">
+            <!-- Logo -->
+            <div class="flex items-center">
+                <a href="/" aria-label="Lieferspatz Home" class="flex items-center">
+                    <img src="/static/favicon.png" alt="Lieferspatz Logo" class="w-10 h-10">
+                    <span class="text-xl font-bold ml-2">Lieferspatz</span>
+                </a>
+            </div>
+            <!-- Search Bar -->
+            <div class="flex items-center bg-white rounded-full px-4 py-2 shadow space-x-2">
+                <input
+                    type="text"
+                    placeholder="Enter Your Location"
+                    class="text-gray-700 placeholder-gray-500 focus:outline-none w-56 md:w-64">
+                <button class="bg-teal-500 text-white px-4 py-2 rounded-full hover:bg-teal-600">
+                    Find Food
+                </button>
+            </div>
+            <!-- Login & Register Buttons -->
+            <div class="flex items-center space-x-4">
+                <a href="/login" 
+                    class="px-6 py-2 bg-white text-teal-600 font-semibold rounded-lg shadow hover:bg-gray-100 hover:shadow-md transition-all">
+                    Login
+                </a>
+                <a href="/register" 
+                    class="px-6 py-2 bg-teal-700 text-white font-semibold rounded-lg shadow hover:bg-teal-800 hover:shadow-md transition-all">
+                    Register
+                </a>
+            </div>
+        </div>
+    </header>
+    
+    
+    
+
+    
+<!-- Hero Section -->
+<section class="bg-white py-16">
+    <div class="container mx-auto flex flex-col md:flex-row items-center justify-between text-center md:text-left">
+        <div class="w-full md:w-1/2">
+            <h2 class="text-4xl font-bold mb-6">Hungry? Order now!</h2>
+            <p class="text-gray-600 mb-8">
+                Find your favorite restaurants and order delicious food in just a few clicks.
+            </p>
+            <div class="flex items-center space-x-4">
+                <a href="/login" 
+                   class="px-6 py-2 bg-white text-teal-600 font-semibold rounded-lg shadow hover:bg-gray-100 hover:shadow-md transition-all">
+                    Login
+                </a>
+                <a href="/register" 
+                   class="px-6 py-2 bg-teal-700 text-white font-semibold rounded-lg shadow hover:bg-teal-800 hover:shadow-md transition-all">
+                    Register
+                </a>
+            </div>
+            
+        </div>
+        <div class="w-full md:w-1/2 mt-8 md:mt-0">
+            <img src="/static/images/food-placeholder.png" alt="Food Placeholder" class="rounded-lg shadow-md">
+        </div>
+    </div>
+</section>
+
+
+    <!-- Search Section -->
+<section class="py-6 bg-gray-50">
+    <div class="container mx-auto flex justify-center items-center space-x-4">
+        <input
+            type="text"
+            placeholder="Enter Your Location"
+            class="border border-gray-300 p-3 w-1/2 rounded-lg shadow-sm"
+        />
+        <button class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+            Find Food
+        </button>
+    </div>
+</section>
+
+
+<!-- Restaurants Grid -->
+<section class="py-12 bg-white">
+    <div class="container mx-auto">
+        <div class="grid">
+            <div class="restaurant-card">
+                <img src="/static/images/mcdonalds-burger.png" alt="McDonald's Portsmouthplatz">
+                <h4>McDonald's Portsmouthplatz</h4>
+                <p>4.2 ★ (700+) • 10 Min.</p>
+            </div>
+            <div class="restaurant-card">
+                <img src="/static/images/sushi.png" alt="Sushi Paradise">
+                <h4>Sushi Paradise</h4>
+                <p>4.5 ★ (500+) • 15 Min.</p>
+            </div>
+            <div class="restaurant-card">
+                <img src="/static/images/pizza.png" alt="Pizza Palace">
+                <h4>Pizza Palace</h4>
+                <p>4.7 ★ (800+) • 12 Min.</p>
+            </div>
+            <div class="restaurant-card">
+                <img src="/static/images/steak.png" alt="Steak Haven">
+                <h4>Steak Haven</h4>
+                <p>4.6 ★ (400+) • 20 Min.</p>
+            </div>
+            <div class="restaurant-card">
+                <img src="/static/images/bakery.png" alt="Bakery Bliss">
+                <h4>Bakery Bliss</h4>
+                <p>4.3 ★ (350+) • 8 Min.</p>
+            </div>
+            <div class="restaurant-card">
+                <img src="/static/images/vegan.png" alt="Vegan Delights">
+                <h4>Vegan Delights</h4>
+                <p>4.8 ★ (250+) • 25 Min.</p>
+            </div>
+            <div class="restaurant-card">
+                <img src="/static/images/noodles.png" alt="Noodle Nook">
+                <h4>Noodle Nook</h4>
+                <p>4.4 ★ (600+) • 18 Min.</p>
+            </div>
+            <div class="restaurant-card">
+                <img src="/static/images/seafood.png" alt="Seafood Corner">
+                <h4>Seafood Corner</h4>
+                <p>4.9 ★ (300+) • 14 Min.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+
+<footer class="bg-gray-800 text-white py-8 relative">
+    <div class="container mx-auto flex justify-between items-end">
+        <!-- Payment Methods -->
+        <div class="absolute bottom-4 left-4 flex items-center space-x-4">
+            <img src="/static/images/visa.svg" alt="Visa" class="w-12">
+            <img src="/static/images/mastercard.svg" alt="MasterCard" class="w-12">
+            <img src="/static/images/maestro.svg" alt="Maestro" class="w-12">
+            <img src="/static/images/amex.svg" alt="American Express" class="w-12">
+            <img src="/static/images/paypal.svg" alt="PayPal" class="w-12">
+        </div>
+
+        <!-- Subscription Form -->
+        <div class="absolute bottom-4 right-4 flex items-center space-x-3">
+            <input
+                type="email"
+                placeholder="Enter your email"
+                class="w-72 p-3 rounded-lg border border-gray-400 text-gray-800 focus:outline-none focus:border-teal-400"
+            />
+            <button class="bg-teal-500 text-white px-6 py-3 rounded-lg hover:bg-teal-600">
+                Subscribe
+            </button>
+        </div>
+    </div>
+</footer>
+
+
+
+</body>
+</html>
