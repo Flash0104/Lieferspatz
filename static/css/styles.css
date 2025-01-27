@@ -15,6 +15,24 @@ html, :host {
   -webkit-tap-highlight-color: transparent;
 }
 
+svg.text-gray-500 {
+  background: none;
+}
+
+svg {
+  padding: 0;
+  margin: 0;
+  display: block; /* Prevent inline spacing */
+}
+
+
+.text-gray-500 {
+  background: none; /* No background for the icon */
+  fill: #ffffff; /* White color for the SVG */
+  display: block; /* Prevent inline spacing issues */
+}
+
+
 html, body {
     height: 100%; /* Ensure full height for the page */
     margin: 0;
@@ -26,18 +44,30 @@ header {
     background: linear-gradient(to right, #38b2ac, #319795);
     color: white;
     padding: 1rem 0;
+    margin-bottom: 2rem;
 }
 
 
 header .container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap; /* For better responsiveness */
+  display: flex;
+  justify-content: flex-start; /* Align items to the left */
+  align-items: center;
+  padding: 0 1rem; /* Add optional padding */
+  margin: 0; /* Remove auto-centering */
+  max-width: none; /* Ensure no limiting width */
 }
 
 header .flex.items-center {
-    flex-wrap: nowrap;
+  margin: 0; /* Ensure no unintentional negative space */
+}
+
+
+header .flex.items-center .text-xl {
+  margin-left: 0.75rem; /* Better alignment with the logo */
+}
+
+header .flex.items-center.space-x-2 {
+  gap: 0.5rem; /* Reduce space between the hamburger and logo */
 }
 
 header .flex.items-center.space-x-3 {
@@ -46,11 +76,28 @@ header .flex.items-center.space-x-3 {
     gap: 1rem;
 }
 
-header img {
-    width: 2.5rem;
-    height: 2.5rem;
+/* Hamburger and Logo Alignment */
+header .flex.items-center.space-x-4 {
+  margin-left: 0; /* Remove any left margin */
+  gap: 0.75rem; /* Adjust spacing between elements */
 }
 
+
+header .flex.items-center.space-x-6 {
+  gap: 1.5rem; /* Increased spacing for better balance */
+}
+
+header img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+header .text-xl {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-left: 0.5rem;
+}
 
 header h1 {
     font-size: 1.5rem;
@@ -59,11 +106,8 @@ header h1 {
 }
 
 header input[type="text"] {
-    border: none;
-    outline: none;
-    width: 100%; /* Responsive width for small screens */
-    font-size: 1rem;
-    margin-right: 0.5rem;
+  flex-grow: 0; /* Prevent excessive growth */
+  max-width: 300px; /* Set a max width */
 }
 
 header .flex.items-center.bg-white {
@@ -71,9 +115,36 @@ header .flex.items-center.bg-white {
     flex: 1;
 }
 
+.flex.items-center.bg-white {
+  padding: 0.5rem 1rem; /* Add more padding for clarity */
+  border-radius: 2rem; /* Make input bar more rounded */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Enhanced shadow */
+  background-color: transparent;
+}
+
+.flex.items-center.bg-white input {
+  font-size: 1rem; /* Adjust font size */
+}
+
+
+/* Location Icon and Input Adjustments */
+.flex.items-center.bg-white svg {
+  width: 22px; /* Larger size for better visibility */
+  height: 22px;
+  margin-right: 0.5rem; /* Space between icon and input */
+}
+
+
+header .flex.items-center img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain; /* Keep logo proportions */
+}
+
+
+/* Navbar Buttons Spacing */
 .flex.items-center.space-x-4 {
-  display: flex;
-  gap: 1rem; /* Space between buttons */
+  gap: 1.5rem; /* Better spacing between buttons */
 }
 
 a.px-6.py-2 {
@@ -103,6 +174,12 @@ a.bg-teal-700.text-white {
 a.bg-teal-700.text-white:hover {
   background-color: #285e61;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  padding: 10px;
 }
 
 nav a {
@@ -142,105 +219,202 @@ img {
     height: auto;
 }
 
+.hamburger-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.address-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 20px;
+}
+
+.address-label {
+  font-size: 14px;
+}
+
+.find-location {
+  padding: 5px 10px;
+  background-color: teal;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
 /* Adjust grid spacing */
 /* Grid styling for the restaurant section */
 .grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr); /* Ensure 4 columns per row */
-    gap: 1.5rem; /* Spacing between grid items */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem; /* Space between grid items */
+  margin-top: 2rem;
+  margin-bottom: 2rem;
 }
 
+/* Responsive column definitions */
+.grid-cols-1 {
+  grid-template-columns: repeat(1, 1fr); /* Single column layout */
+}
+
+.sm\:grid-cols-2 {
+  grid-template-columns: repeat(2, 1fr); /* 2 columns for small screens */
+}
+
+.lg\:grid-cols-4 {
+  grid-template-columns: repeat(4, 1fr); /* 4 columns for large screens */
+}
+
+.grid-cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 columns */
+}
+
+.grid-cols-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr)); /* 4 columns */
+}
+
+.grid-cols-auto {
+  grid-template-columns: auto; /* Let the content decide */
+}
+
+.grid-gap {
+  gap: 1.5rem; /* Consistent gap utility */
+}
+
+/* Specific styles for grid items */
 .grid-item {
-    background-color: #f9f9f9; /* Light background for the card */
-    border-radius: 8px; /* Rounded corners */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
-    padding: 1rem; /* Add padding inside the card */
-    text-align: center; /* Center text inside the card */
-    transition: transform 0.2s ease, box-shadow 0.2s ease; /* Hover effect */
-    display: flex;
-    flex-direction: column; /* Stack items vertically */
-    align-items: center; /* Center items horizontally */
+  background-color: #f9f9f9; /* Light background for cards */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  padding: 1rem; /* Internal spacing */
+  text-align: center; /* Center-align text */
+  display: flex;
+  flex-direction: column; /* Stack elements vertically */
+  align-items: center; /* Center items horizontally */
+  transition: transform 0.2s ease, box-shadow 0.2s ease; /* Smooth hover effect */
 }
 
 .grid-item:hover {
-    transform: translateY(-5px); /* Slight lift on hover */
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15); /* Deeper shadow on hover */
+  transform: translateY(-5px); /* Slight lift */
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15); /* Enhanced shadow */
 }
 
+/* Image styling for grid items */
 .grid-item img {
-    width: 150px; /* Fixed width for images */
-    height: 150px; /* Fixed height for consistent size */
-    object-fit: cover; /* Crop images to fit the container */
-    border-radius: 8px; /* Rounded corners for the image */
-    margin-bottom: 1rem; /* Spacing below the image */
+  width: 150px; /* Fixed width for images */
+  height: 150px; /* Fixed height for consistency */
+  object-fit: cover; /* Crop and fit */
+  border-radius: 8px; /* Match the card style */
+  margin-bottom: 1rem; /* Space below the image */
 }
 
-
+/* Heading styles inside grid items */
 .grid-item h4 {
-    font-size: 1.25rem;
-    font-weight: bold;
-    margin: 0.5rem 0; /* Spacing above and below the heading */
-    color: #333;
+  font-size: 1.25rem; /* Slightly larger text */
+  font-weight: bold;
+  margin: 0.5rem 0; /* Spacing above and below */
+  color: #333;
 }
 
+/* Paragraph styles inside grid items */
 .grid-item p {
-    color: #666;
-    font-size: 0.875rem; /* Smaller font for details */
+  color: #666; /* Muted text */
+  font-size: 0.875rem; /* Slightly smaller font */
 }
 
 .restaurant-card {
-    background-color: #f9f9f9;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 1rem;
-    text-align: center;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    height: 300px; /* Fixed height for all cards */
-    width: 100%; /* Ensures card fits within the grid column */
+  background-color: #ffffff; /* White background for cards */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  padding: 1rem; /* Spacing inside cards */
+  display: flex;
+  flex-direction: column; /* Stack content vertically */
+  align-items: center; /* Center-align items */
+  text-align: center; /* Center-align text */
+  transition: transform 0.2s ease, box-shadow 0.2s ease; /* Smooth hover effect */
 }
-
 
 .restaurant-card:hover {
-    transform: scale(1.05); /* Slight scaling for hover */
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15); /* Slightly deeper shadow */
+  transform: translateY(-5px); /* Slight lift on hover */
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15); /* Enhanced shadow */
 }
 
-
+/* Image inside restaurant cards */
 .restaurant-card img {
-    width: 100px; /* Fixed width */
-    height: 100px; /* Fixed height */
-    object-fit: cover; /* Keeps the image proportions */
-    border-radius: 0.5rem;
-    margin-bottom: 0.5rem;
-    background-color: #e0e0e0; /* Placeholder background for missing images */
+  width: 120px; /* Fixed width for images */
+  height: 120px; /* Fixed height */
+  object-fit: cover; /* Maintain aspect ratio */
+  border-radius: 8px; /* Match card style */
+  margin-bottom: 1rem; /* Spacing below image */
+  background-color: #f0f0f0; /* Placeholder background */
 }
 
+/* Text inside cards */
 .restaurant-card h4 {
-    font-size: 1.1rem;
-    font-weight: bold;
-    margin-bottom: 0.25rem;
-    color: #333;
+  font-size: 1.25rem; /* Slightly larger heading text */
+  font-weight: bold; /* Bold font */
+  margin-bottom: 0.5rem; /* Spacing below title */
+  color: #333333; /* Dark text color */
 }
 
 .restaurant-card p {
-    font-size: 0.9rem;
-    color: #555;
+  font-size: 0.875rem; /* Smaller text for details */
+  color: #666666; /* Muted text color */
 }
 
-/* Adjust hero section alignment */
-.hero-section {
-    padding: 2rem 0;
+.hero-card {
+  background-color: #f3f3f3; /* Light background */
+  border-radius: 0.5rem; /* Subtle rounded corners */
+  padding: 2rem; /* Spacing inside the hero section */
+  margin: 2rem auto; /* Center the hero section */
+  max-width: calc(25% * 4 + 1.5rem * 3); /* Adjust width to fit 4 cards and 3 gaps */
+  display: flex;
+  flex-direction: column; /* Stack elements vertically */
+  align-items: center; /* Center elements horizontally */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  text-align: center; /* Center-align text */
 }
 
-.hero-section img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 0.5rem;
+.hero-card h1 {
+  font-size: 2rem; /* Larger headline */
+  font-weight: bold;
+  color: #333; /* Dark text */
+  margin-bottom: 1rem;
 }
+
+.hero-card p {
+  font-size: 1rem; /* Smaller descriptive text */
+  color: #555; /* Muted text */
+  margin-bottom: 1rem;
+}
+
+.hero-card a {
+  display: inline-block;
+  padding: 0.5rem 1.5rem;
+  background-color: #319795; /* Teal button */
+  color: white;
+  border-radius: 0.25rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.hero-card a:hover {
+  background-color: #2c7a7b; /* Darker teal on hover */
+}
+
+.hero-card img {
+  width: 200px; /* Adjust image size */
+  height: auto;
+  object-fit: cover;
+  border-radius: 0.5rem; /* Rounded corners for the image */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for the image */
+}
+
 
 .logo {
     width: 48px; /* Adjust as needed */
@@ -249,10 +423,18 @@ img {
 }
 
 footer {
-    position: relative; /* Allow positioning of child elements */
+    position: sticky;
+    bottom: 0;
+    width: 100%;
     background-color: #00ff7b;
     color: #000000;
     padding: 2rem 1rem;
+    margin-bottom: 2rem;
+}
+
+footer .flex {
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 footer img {
@@ -305,16 +487,94 @@ button {
     padding: 8px 16px; /* Smaller button */
 }
 
+/* Utility for responsive design */
+@media (min-width: 640px) {
+  .sm\\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .lg\\:grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
 
-    header .container {
-        flex-direction: column;
+  header .container {
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.flex-grow {
+  justify-content: center; /* Ensures middle alignment on smaller screens */
+}
+
+    header .container > div {
+      margin-bottom: 1rem; /* Add spacing between sections */
     }
 
     header input[type="text"] {
         width: 100%; /* Expand to full width on smaller screens */
     }
+
+    .hero-section {
+      background-color: #f9fafb;
+      padding: 3rem 0;
+    }
+    
+    .hero-section h1 {
+      font-size: 2.5rem;
+      line-height: 1.2;
+      color: #2d3748; /* Dark gray for better contrast */
+    }
+    
+    .hero-section p {
+      font-size: 1.125rem;
+      color: #4a5568; /* Medium gray for supportive text */
+    }
+    
+    .hero-section .btn-primary,
+    .hero-section .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    
+    .hero-section .btn-primary {
+      background-color: #319795; /* Teal */
+      color: white;
+      border: none;
+    }
+    
+    .hero-section .btn-primary:hover {
+      background-color: #2c7a7b;
+    }
+    
+    .hero-section .btn-secondary {
+      background-color: #edf2f7; /* Light gray */
+      color: #2d3748; /* Dark gray */
+      border: 1px solid #e2e8f0; /* Border for secondary button */
+    }
+    
+    .hero-section .btn-secondary:hover {
+      background-color: #e2e8f0; /* Slightly darker gray */
+    }
+    
+    .hero-section img {
+      width: 12rem;
+      height: auto;
+      object-fit: cover;
+    }
+    
 
     footer .container {
         flex-direction: column;

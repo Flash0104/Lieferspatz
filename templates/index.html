@@ -8,68 +8,100 @@
         <link rel="stylesheet" href="/static/css/styles.css">
         <title>Lieferspatz</title>
     </head>
-    
 
-<body class="bg-gray-100 font-sans">
+<body class="bg-gray-100 font-sans flex flex-col min-h-screen">
     
     
+<!-- Header -->
+<body class="bg-gray-100 font-sans flex flex-col min-h-screen">
     <!-- Header -->
     <header class="bg-gradient-to-r from-teal-400 to-teal-600 text-white py-4">
-        <div class="container mx-auto flex items-center justify-between">
-            <!-- Logo -->
-            <div class="flex items-center">
-                <a href="/" aria-label="Lieferspatz Home" class="flex items-center">
-                    <img src="/static/favicon.png" alt="Lieferspatz Logo" class="w-10 h-10">
-                    <span class="text-xl font-bold ml-2">Lieferspatz</span>
-                </a>
-            </div>
-            <!-- Search Bar -->
-            <div class="flex items-center bg-white rounded-full px-4 py-2 shadow space-x-2">
-                <input
-                    type="text"
-                    placeholder="Enter Your Location"
-                    class="text-gray-700 placeholder-gray-500 focus:outline-none w-56 md:w-64">
-                <button class="bg-teal-500 text-white px-4 py-2 rounded-full hover:bg-teal-600">
-                    Find Food
-                </button>
-            </div>
-            <!-- Login & Register Buttons -->
-            <div class="flex items-center space-x-4">
-                <a href="/login" 
-                    class="px-6 py-2 bg-white text-teal-600 font-semibold rounded-lg shadow hover:bg-gray-100 hover:shadow-md transition-all">
-                    Login
-                </a>
-                <a href="/register" 
-                    class="px-6 py-2 bg-teal-700 text-white font-semibold rounded-lg shadow hover:bg-teal-800 hover:shadow-md transition-all">
-                    Register
-                </a>
-            </div>
+      <div class="container mx-auto flex items-center justify-between px-4">
+        <!-- Left Section -->
+        <div class="flex items-center space-x-6">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="cursor-pointer" aria-label="Open Menu">
+            <title>Menu</title>
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M23 4H1v3h22V4Zm0 7H1v3h22v-3ZM1 18h22v3H1v-3Z"
+              fill="currentColor"
+            ></path>
+          </svg>
+          <a href="/" aria-label="Lieferspatz Home" class="flex items-center">
+            <img src="/static/favicon.png" alt="Lieferspatz Logo" class="w-10 h-10" />
+            <span class="text-xl font-bold ml-4">Lieferspatz</span>
+          </a>
         </div>
+        <!-- Center Section -->
+        <div class="flex-grow flex justify-center">
+          <div class="flex items-center bg-white rounded-full px-4 py-2 shadow space-x-4" style="max-width: 300px;">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" class="text-gray-500">
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M12 1c2.4 0 4.9.9 6.7 2.8 3.7 3.7 3.7 9.8 0 13.4L12 24l-6.7-6.7c-3.7-3.7-3.7-9.8 0-13.5C7.1 1.9 9.6 1 12 1Zm0 18.8 4.6-4.6c-2.5-2.6-2.5-6.7 0-9.3C15.4 4.7 13.7 4 12 4c-1.7 0-3.4.7-4.6 1.9-2.5 2.6-2.5 6.7 0 9.3l4.6 4.6Zm2-9.3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"
+                fill="currentColor"
+              ></path>
+            </svg>
+            <input type="text" placeholder="Enter Your Location" class="text-gray-700 placeholder-gray-500 focus:outline-none w-full" />
+          </div>
+        </div>
+        <!-- Right Section -->
+        <div class="flex items-center space-x-4">
+          <a href="/login" class="px-6 py-2 bg-white text-teal-600 font-semibold rounded-lg shadow hover:bg-gray-100 hover:shadow-md transition-all">Login</a>
+          <a href="/register" class="px-6 py-2 bg-teal-700 text-white font-semibold rounded-lg shadow hover:bg-teal-800 hover:shadow-md transition-all">Register</a>
+          <div class="cursor-pointer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-label="0 carts">
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M5.5 18H21l2-12.5H6.5l-.5-3H.9v3h2.5L5.5 18Zm14-9.5-1 6.5H8L7 8.5h12.5ZM7.5 23a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm14-2a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"
+                fill="currentColor"
+              ></path>
+            </svg>
+          </div>
+        </div>
+      </div>
     </header>
-    
-    
-    
 
-    
+
+
+
+
+
+
+
+
 <!-- Hero Section -->
-<div class="flex justify-center items-center bg-gradient-to-r from-teal-400 to-green-500 py-16">
-    <div class="bg-white shadow-lg rounded-2xl p-8 w-3/4 max-w-xl">
-      <h1 class="text-3xl font-bold text-gray-800 mb-4 text-center">
-        Hungry? Order now!
-      </h1>
-      <p class="text-gray-600 text-center">
-        Find your favorite restaurants and order delicious food in just a few clicks.
-      </p>
+<section class="bg-gray-200 py-8 flex justify-center">
+    <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-screen-lg flex items-center gap-8">
+      <div class="flex-1 space-y-6">
+        <h1 class="text-4xl font-extrabold text-gray-900 leading-tight">
+          Hungry? <span class="text-teal-600">Order now!</span>
+        </h1>
+        <p class="text-gray-700 text-lg">Satisfy your cravings with just a few clicks. Browse, order, and enjoy the best food delivered to your doorstep.</p>
+        <div class="flex space-x-4">
+          <a href="/login" class="px-6 py-3 bg-teal-600 text-white text-lg font-medium rounded-lg shadow hover:bg-teal-700 focus:ring-4 focus:ring-teal-300 focus:outline-none">Login</a>
+          <a href="/register" class="px-6 py-3 bg-gray-200 text-gray-800 text-lg font-medium rounded-lg shadow hover:bg-gray-300 focus:ring-4 focus:ring-gray-200 focus:outline-none">Register</a>
+        </div>
+      </div>
+      <div class="flex-1 flex justify-center items-center">
+        <div class="bg-gray-200 rounded-lg w-64 h-64 flex items-center justify-center shadow-inner">
+          <img src="/static/images/hero_image.png" alt="Order Now Graphic" class="w-48 h-48 object-contain" />
+        </div>
+      </div>
     </div>
-  </div>
+  </section>
+
   
 
 
 <!-- Restaurants Grid -->
 <section class="py-12 bg-white">
-    <div class="container mx-auto">
-        <div class="grid">
-            <div class="restaurant-card">
+    <div class="container mx-auto px-4">
+      <div class="grid ">           
+        <div class="restaurant-card">
                 <img src="/static/images/mcdonalds-burger.png" alt="McDonald's Portsmouthplatz">
                 <h4>McDonald's Portsmouthplatz</h4>
                 <p>4.2 ★ (700+) • 10 Min.</p>
