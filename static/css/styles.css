@@ -370,7 +370,7 @@ img {
   border-radius: 0.5rem; /* Subtle rounded corners */
   padding: 2rem; /* Spacing inside the hero section */
   margin: 2rem auto; /* Center the hero section */
-  max-width: calc(25% * 4 + 1.5rem * 3); /* Adjust width to fit 4 cards and 3 gaps */
+  max-width: 900px; /* Adjust width to fit 1200px */
   display: flex;
   flex-direction: column; /* Stack elements vertically */
   align-items: center; /* Center elements horizontally */
@@ -414,6 +414,7 @@ img {
   border-radius: 0.5rem; /* Rounded corners for the image */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for the image */
 }
+
 
 
 .logo {
@@ -486,6 +487,32 @@ footer .right-4 {
 button {
     padding: 8px 16px; /* Smaller button */
 }
+
+#suggestions {
+  position: absolute;
+  background: white;
+  border: 1px solid #ddd;
+  width: 100%;
+  z-index: 10;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: none;
+}
+
+#suggestions li {
+  padding: 10px;
+  cursor: pointer;
+}
+
+#suggestions li:hover {
+  background-color: #f0f0f0;
+}
+
+#suggestions:not(.hidden) {
+  display: block;
+}
+
 
 /* Utility for responsive design */
 @media (min-width: 640px) {

@@ -10,6 +10,29 @@
     <header class="bg-blue-600 text-white p-4">
         <h1 class="text-2xl font-bold">Menu for {{ restaurant }}</h1>
     </header>
+    
+    <script>
+        const userLocation = { lat: /* user latitude */, lng: /* user longitude */ };
+    
+        // Example restaurant location
+        const restaurantLocation = { lat: 51.4344, lng: 6.7623 };
+    
+        const service = new google.maps.DistanceMatrixService();
+        service.getDistanceMatrix(
+            {
+                origins: [userLocation],
+                destinations: [restaurantLocation],
+                travelMode: "DRIVING",
+            },
+            (response, status) => {
+                if (status === "OK") {
+                    const distance = response.rows[0].elements[0].distance.text;
+                    console.log(`Distance to restaurant: ${distance}`);
+                }
+            }
+        );
+    </script>
+    
     <main class="p-6">
         <ul class="bg-white p-6 rounded shadow-md">
             <li class="mb-2">Pizza - $10 <button class="bg-green-500 text-white px-2 py-1 rounded">Add</button></li>
