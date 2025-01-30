@@ -1,48 +1,78 @@
-document.getElementById('getLocationButton').addEventListener('click', () => {
-  const button = document.getElementById('getLocationButton');
-  button.disabled = true; // Disable the button during loading
-  button.textContent = 'Fetching...';
+document.addEventListener("DOMContentLoaded", function () {
+    const locationInput = document.getElementById("location-input");
+    const suggestionsList = document.getElementById("suggestions");
+    const googleButton = document.querySelector(".google-register");
 
-  if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-          (position) => {
-              const latitude = position.coords.latitude;
-              const longitude = position.coords.longitude;
+    // Debounce function to reduce API calls
+    function debounce(func, delay) {
+        let timeout;
+        return function (...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), delay);
+        };
+    }
 
-              console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
+    // Fetch suggestions based on input
+    async function fetchLocationSuggestions() {
+        let query = locationInput.value.trim();
+        if (query.length < 2) return;
 
-              // Send to backend for reverse geocoding
-              fetch('/reverse-geocode', {
-                  method: 'POST',
-                  headers: {
-                      'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({ latitude, longitude }),
-              })
-                  .then((response) => response.json())
-                  .then((data) => {
-                      console.log('Address:', data.address);
-                      alert(`Your Address: ${data.address}`);
-                      button.textContent = 'Get My Address'; // Reset button text
-                      button.disabled = false; // Re-enable the button
-                  })
-                  .catch((err) => {
-                      console.error(err);
-                      alert('Error fetching address. Please try again.');
-                      button.textContent = 'Get My Address'; // Reset button text
-                      button.disabled = false; // Re-enable the button
-                  });
-          },
-          (error) => {
-              console.error('Error fetching location:', error);
-              alert('Failed to get your location. Please enable location services.');
-              button.textContent = 'Get My Address'; // Reset button text
-              button.disabled = false; // Re-enable the button
-          }
-      );
-  } else {
-      alert('Geolocation is not supported by your browser.');
-      button.textContent = 'Get My Address'; // Reset button text
-      button.disabled = false; // Re-enable the button
-  }
+        try {
+            const response = await fetch(`/api/places?query=${query}`, {
+                headers: {
+                    "User-Agent": "Lieferspatz/1.0 (+https://lieferspatz.com)" // Ensuring OSM allows the request
+                }
+            });
+
+            if (!response.ok) throw new Error("Failed to fetch locations.");
+
+            const data = await response.json();
+
+            if (Array.isArray(data.places)) {
+                suggestionsList.innerHTML = "";
+                data.places.forEach((place) => {
+                    let item = document.createElement("li");
+                    item.textContent = place.name;
+                    item.classList.add("cursor-pointer", "p-2", "hover:bg-gray-200");
+                    item.addEventListener("click", () => selectLocation(place));
+                    suggestionsList.appendChild(item);
+                });
+                suggestionsList.classList.remove("hidden");
+            }
+        } catch (error) {
+            console.error("Error fetching location data:", error);
+        }
+    }
+
+    locationInput.addEventListener("input", debounce(fetchLocationSuggestions, 300));
+
+    // Select location and update the map
+    function selectLocation(place) {
+        locationInput.value = place.name;
+        suggestionsList.classList.add("hidden");
+
+        // Check if lat/lon are valid numbers
+        const lat = parseFloat(place.lat);
+        const lon = parseFloat(place.lon);
+        if (!isNaN(lat) && !isNaN(lon) && typeof map !== "undefined") {
+            map.setView([lat, lon], 14);
+            L.marker([lat, lon]).addTo(map).bindPopup(place.name).openPopup();
+        } else {
+            console.error("Invalid location coordinates:", place);
+        }
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener("click", (e) => {
+        if (!locationInput.contains(e.target) && !suggestionsList.contains(e.target)) {
+            suggestionsList.classList.add("hidden");
+        }
+    });
+
+    // Google login button handler
+    if (googleButton) {
+        googleButton.addEventListener("click", function () {
+            window.location.href = "/login/google";  // Redirects to Google OAuth login
+        });
+    }
 });

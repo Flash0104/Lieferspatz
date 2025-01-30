@@ -1,0 +1,58 @@
+[
+    {
+        "name": "McDonald's Portsmouthplatz",
+        "image": "/static/images/mcdonalds.png",
+        "rating": 4.2,
+        "reviews": 700,
+        "deliveryTime": 10
+    },
+    {
+        "name": "Sushi Paradise",
+        "image": "/static/images/sushi.png",
+        "rating": 4.5,
+        "reviews": 500,
+        "deliveryTime": 15
+    },
+    {
+        "name": "Pizza Palace",
+        "image": "/static/images/pizza.png",
+        "rating": 4.7,
+        "reviews": 800,
+        "deliveryTime": 12
+    },
+    {
+        "name": "Steak Haven",
+        "image": "/static/images/steak.png",
+        "rating": 4.6,
+        "reviews": 400,
+        "deliveryTime": 20
+    },
+    {
+        "name": "Bakery Bliss",
+        "image": "/static/images/bakery.png",
+        "rating": 4.3,
+        "reviews": 350,
+        "deliveryTime": 8
+    },
+    {
+        "name": "Vegan Delights",
+        "image": "/static/images/vegan.png",
+        "rating": 4.8,
+        "reviews": 250,
+        "deliveryTime": 25
+    },
+    {
+        "name": "Noodle Nook",
+        "image": "/static/images/noodle.png",
+        "rating": 4.4,
+        "reviews": 600,
+        "deliveryTime": 18
+    },
+    {
+        "name": "Seafood Corner",
+        "image": "/static/images/seafood.png",
+        "rating": 4.9,
+        "reviews": 300,
+        "deliveryTime": 14
+    }
+]

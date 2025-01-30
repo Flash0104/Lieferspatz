@@ -1,117 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="description" content="Lieferspatz - Find your favorite restaurants and order delicious food in just a few clicks.">
-        <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
-        <link rel="stylesheet" href="/static/css/styles.css">
-        <title>Lieferspatz - Home</title>
-    <!-- Load Google Maps JavaScript API -->
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places"></script>
-    <script>
-        function initMap() {
-            // Try HTML5 geolocation
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition((position) => {
-                    const userLocation = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude,
-                    };
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Lieferspatz - Find your favorite restaurants and order delicious food in just a few clicks.">
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/static/css/tailwind.css">
 
-                    // Initialize Google Map
-                    const map = new google.maps.Map(document.getElementById("map"), {
-                        center: userLocation,
-                        zoom: 12,
-                    });
+    <title>Lieferspatz - Home</title>
 
-                    new google.maps.Marker({
-                        position: userLocation,
-                        map,
-                        title: "You are here!",
-                    });
-                }, () => {
-                    console.error("Geolocation failed.");
-                });
-            } else {
-                console.error("Your browser doesn't support geolocation.");
-            }
+    <!-- Load OpenStreetMap Leaflet Library -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const locationInput = document.getElementById('location-input');
+    const suggestionsList = document.getElementById('suggestions'); // 🔍 Make sure this exists!
+
+    if (!suggestionsList) {
+        console.error("❌ suggestionsList element not found!");
+        return; // Prevent further execution
+    }
+
+    locationInput.addEventListener('input', function () {
+        const query = this.value.trim();
+        if (query.length > 2) {
+            fetch(`/api/places?query=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log("✅ API Response:", data);
+                    suggestionsList.innerHTML = '';
+                    if (data.places && data.places.length > 0) {
+                        data.places.forEach(place => {
+                            const li = document.createElement('li');
+                            li.textContent = place.name;
+                            li.classList.add('px-4', 'py-2', 'hover:bg-gray-100', 'cursor-pointer');
+                            li.addEventListener('click', () => {
+                                locationInput.value = place.name;
+                                suggestionsList.classList.add('hidden');
+                            });
+                            suggestionsList.appendChild(li);
+                        });
+                        suggestionsList.classList.remove('hidden');
+                    } else {
+                        suggestionsList.classList.add('hidden');
+                    }
+                })
+                .catch(error => console.error('❌ Error fetching places:', error));
+        } else {
+            suggestionsList.classList.add('hidden');
         }
+    });
+
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', function (event) {
+        if (!locationInput.contains(event.target) && !suggestionsList.contains(event.target)) {
+            suggestionsList.classList.add('hidden');
+        }
+    });
+});
+
     </script>
 </head>
-<body onload="initMap()">
-    <div id="map" style="width: 100%; height: 500px;"></div>
+
+<body class="bg-gray-100 font-sans flex flex-col min-h-screen">
+
+    <!-- Load Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
 
-<body class="bg-gray-100 font-sans flex flex-col min-h-screen">
-    
-    
+
+
+
 <!-- Header -->
-<body class="bg-gray-100 font-sans flex flex-col min-h-screen">
-    <!-- Header -->
-    <header class="bg-gradient-to-r from-teal-400 to-teal-600 text-white py-4">
-      <div class="container mx-auto flex items-center justify-between px-4">
-        <!-- Left Section -->
-        <div class="flex items-center space-x-6">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="cursor-pointer" aria-label="Open Menu">
-            <title>Menu</title>
-            <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
-              d="M23 4H1v3h22V4Zm0 7H1v3h22v-3ZM1 18h22v3H1v-3Z"
-              fill="currentColor"
-            ></path>
-          </svg>
-          <a href="/" aria-label="Lieferspatz Home" class="flex items-center">
-            <img src="/static/favicon.png" alt="Lieferspatz Logo" class="w-10 h-10" />
-            <span class="text-xl font-bold ml-4">Lieferspatz</span>
-          </a>
-        </div>
-        <!-- Center Section -->
-<div class="flex-grow flex justify-center relative">
-  <div class="flex items-center bg-white rounded-full px-4 py-2 shadow space-x-4 w-full max-w-md">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="text-gray-500">
+<header class="fixed top-0 left-0 w-full bg-gradient-to-r from-teal-400 to-teal-600 shadow-md z-50">
+  <div class="container mx-auto flex items-center justify-between px-6">
+    <!-- Left Section -->
+    <div class="flex items-center space-x-6">
+      <!-- Menu Icon -->
+      <button class="focus:outline-none" aria-label="Open Menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="cursor-pointer">
+          <title>Menu</title>
           <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
-              d="M12 1c2.4 0 4.9.9 6.7 2.8 3.7 3.7 3.7 9.8 0 13.4L12 24l-6.7-6.7c-3.7-3.7-3.7-9.8 0-13.5C7.1 1.9 9.6 1 12 1Zm0 18.8 4.6-4.6c2.5-2.6 2.5-6.7 0-9.3C15.4 4.7 13.7 4 12 4c-1.7 0-3.4.7-4.6 1.9-2.5 2.6-2.5 6.7 0 9.3l4.6 4.6Zm2-9.3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"
-              fill="currentColor"></path>
-      </svg>
-      <input
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M23 4H1v3h22V4Zm0 7H1v3h22v-3ZM1 18h22v3H1v-3Z"
+            fill="currentColor">
+          </path>
+        </svg>
+      </button>
+
+      <!-- Logo -->
+      <a href="/" aria-label="Lieferspatz Home" class="flex items-center">
+        <img src="/static/favicon.png" alt="Lieferspatz Logo" class="w-10 h-10" />
+        <span class="text-xl font-bold ml-4">Lieferspatz</span>
+      </a>
+    </div>
+
+    <!-- Center Section - Location Input (Pushed Slightly Right) -->
+    <div class="relative flex-1 flex justify-center ml-auto">
+      <div class="flex items-center bg-white rounded-full px-5 py-2 shadow space-x-4 w-full max-w-lg">
+        <!-- Location Icon -->
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="text-gray-500">
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M12 1c2.4 0 4.9.9 6.7 2.8 3.7 3.7 3.7 9.8 0 13.4L12 24l-6.7-6.7c-3.7-3.7-3.7-9.8 0-13.5C7.1 1.9 9.6 1 12 1Zm0 18.8 4.6-4.6c2.5-2.6 2.5-6.7 0-9.3C15.4 4.7 13.7 4 12 4c-1.7 0-3.4.7-4.6 1.9-2.5 2.6-2.5 6.7 0 9.3l4.6 4.6Zm2-9.3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"
+            fill="currentColor"></path>
+        </svg>
+
+        <!-- Location Input -->
+        <input
           id="location-input"
           type="text"
           placeholder="Enter Your Location"
-          class="text-gray-700 placeholder-gray-500 focus:outline-none w-full"
-          oninput="fetchPlaces()"
-      />
-  </div>
-  <!-- Dropdown Suggestions -->
-  <ul id="suggestions" class="absolute top-full left-0 w-full bg-white rounded-lg shadow-md overflow-hidden mt-2 z-10 hidden"></ul>
-</div>
+          class="w-full px-4 py-2 text-gray-700 placeholder-gray-500 bg-white border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition"
+          aria-label="Location Input"
+          autocomplete="off"
+        />
 
-        <!-- Right Section -->
-        <div class="flex items-center space-x-4">
-          <a href="/login" class="px-6 py-2 bg-white text-teal-600 font-semibold rounded-lg shadow hover:bg-gray-100 hover:shadow-md transition-all">Login</a>
-          <a href="/register" class="px-6 py-2 bg-teal-700 text-white font-semibold rounded-lg shadow hover:bg-teal-800 hover:shadow-md transition-all">Register</a>
-          <div class="cursor-pointer">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-label="0 carts">
-              <path
-                fill-rule="evenodd"
-                clip-rule="evenodd"
-                d="M5.5 18H21l2-12.5H6.5l-.5-3H.9v3h2.5L5.5 18Zm14-9.5-1 6.5H8L7 8.5h12.5ZM7.5 23a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm14-2a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"
-                fill="currentColor"
-              ></path>
-            </svg>
-          </div>
-        </div>
+        <!-- Suggestions Dropdown -->
+        <ul 
+        id="suggestions" 
+        class="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-lg shadow-lg hidden z-10 max-h-60 overflow-y-auto"
+        ></ul>
+
       </div>
-    </header>
+    </div>
+
+    <!-- Right Section - Login/Register & Cart (More Right) -->
+    <div class="flex items-center space-x-8 justify-end">
+      <!-- Login & Register Buttons -->
+      <a href="/login" class="px-6 py-2 bg-white text-teal-600 font-semibold rounded-lg shadow hover:bg-gray-100 hover:shadow-md transition-all">Login</a>
+      <a href="/register" class="px-6 py-2 bg-teal-700 text-white font-semibold rounded-lg shadow hover:bg-teal-800 hover:shadow-md transition-all">Register</a>
+
+      <!-- Cart Button (Rightmost) -->
+      <button class="focus:outline-none" aria-label="Cart">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M5.5 18H21l2-12.5H6.5l-.5-3H.9v3h2.5L5.5 18Zm14-9.5-1 6.5H8L7 8.5h12.5ZM7.5 23a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm14-2a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"
+            fill="currentColor">
+          </path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+
 
 
 
 <!-- Hero Section -->
-<section class="bg-gray-200 py-8">
+<section class="bg-gray-200 mt-12 pt-32 pb-12">
   <div class="bg-white rounded-lg shadow-lg p-8 mx-auto max-w-6xl flex flex-col md:flex-row items-center gap-8">
     <!-- Left Content Section -->
     <div class="flex-1 space-y-6 text-center md:text-left">
@@ -148,82 +193,50 @@
   
 
 
-<!-- Restaurants Grid -->
-<section class="py-12 bg-white">
-    <div class="container mx-auto px-4">
-      <div class="grid ">           
-        <div class="restaurant-card">
-                <img src="/static/images/mcdonalds-burger.png" alt="McDonald's Portsmouthplatz">
-                <h4>McDonald's Portsmouthplatz</h4>
-                <p>4.2 ★ (700+) • 10 Min.</p>
-            </div>
-            <div class="restaurant-card">
-                <img src="/static/images/sushi.png" alt="Sushi Paradise">
-                <h4>Sushi Paradise</h4>
-                <p>4.5 ★ (500+) • 15 Min.</p>
-            </div>
-            <div class="restaurant-card">
-                <img src="/static/images/pizza.png" alt="Pizza Palace">
-                <h4>Pizza Palace</h4>
-                <p>4.7 ★ (800+) • 12 Min.</p>
-            </div>
-            <div class="restaurant-card">
-                <img src="/static/images/steak.png" alt="Steak Haven">
-                <h4>Steak Haven</h4>
-                <p>4.6 ★ (400+) • 20 Min.</p>
-            </div>
-            <div class="restaurant-card">
-                <img src="/static/images/bakery.png" alt="Bakery Bliss">
-                <h4>Bakery Bliss</h4>
-                <p>4.3 ★ (350+) • 8 Min.</p>
-            </div>
-            <div class="restaurant-card">
-                <img src="/static/images/vegan.png" alt="Vegan Delights">
-                <h4>Vegan Delights</h4>
-                <p>4.8 ★ (250+) • 25 Min.</p>
-            </div>
-            <div class="restaurant-card">
-                <img src="/static/images/noodles.png" alt="Noodle Nook">
-                <h4>Noodle Nook</h4>
-                <p>4.4 ★ (600+) • 18 Min.</p>
-            </div>
-            <div class="restaurant-card">
-                <img src="/static/images/seafood.png" alt="Seafood Corner">
-                <h4>Seafood Corner</h4>
-                <p>4.9 ★ (300+) • 14 Min.</p>
-            </div>
-        </div>
-    </div>
+<section class="max-w-6xl mx-auto py-12">
+  <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Popular Restaurants</h2>
+  <div id="restaurant-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <!-- Restaurants will be inserted here dynamically -->
+  </div>
 </section>
 
+<!-- Ensure restaurant.js is loaded -->
+<script src="/static/js/restaurant.js"></script>
 
 
 
-<footer class="bg-gray-800 text-white py-8 relative">
-    <div class="container mx-auto flex justify-between items-end">
-        <!-- Payment Methods -->
-        <div class="absolute bottom-4 left-4 flex items-center space-x-4">
-            <img src="/static/images/visa.svg" alt="Visa" class="w-12">
-            <img src="/static/images/mastercard.svg" alt="MasterCard" class="w-12">
-            <img src="/static/images/maestro.svg" alt="Maestro" class="w-12">
-            <img src="/static/images/amex.svg" alt="American Express" class="w-12">
-            <img src="/static/images/paypal.svg" alt="PayPal" class="w-12">
-        </div>
+    
 
-        <!-- Subscription Form -->
-        <div class="absolute bottom-4 right-4 flex items-center space-x-3">
-            <input
-                type="email"
-                placeholder="Enter your email"
-                class="w-72 p-3 rounded-lg border border-gray-400 text-gray-800 focus:outline-none focus:border-teal-400"
-            />
-            <button class="bg-teal-500 text-white px-6 py-3 rounded-lg hover:bg-teal-600">
-                Subscribe
-            </button>
-            <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-        </div>
-    </div>
+
+
+
+
+<footer class="bg-gray-800 text-white py-8 mt-auto">
+  <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0">
+      
+      <!-- Payment Methods -->
+      <div class="flex items-center space-x-4">
+          <img src="/static/images/visa.svg" alt="Visa" class="w-12">
+          <img src="/static/images/mastercard.svg" alt="MasterCard" class="w-12">
+          <img src="/static/images/maestro.svg" alt="Maestro" class="w-12">
+          <img src="/static/images/amex.svg" alt="American Express" class="w-12">
+          <img src="/static/images/paypal.svg" alt="PayPal" class="w-12">
+      </div>
+
+      <!-- Subscription Form -->
+      <div class="flex items-center space-x-3">
+          <input
+              type="email"
+              placeholder="Enter your email"
+              class="w-72 p-3 rounded-lg border border-gray-400 text-gray-800 focus:outline-none focus:border-teal-400"
+          />
+          <button class="bg-teal-500 text-white px-6 py-3 rounded-lg hover:bg-teal-600">
+              Subscribe
+          </button>
+      </div>
+  </div>
 </footer>
+
 
 
 

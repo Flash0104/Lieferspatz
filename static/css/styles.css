@@ -1,4 +1,10 @@
 /*! tailwindcss v4.0.0 | MIT License | https://tailwindcss.com */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
 *, ::after, ::before, ::backdrop, ::file-selector-button {
   box-sizing: border-box;
   margin: 0;
@@ -249,11 +255,10 @@ img {
 /* Grid styling for the restaurant section */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem; /* Space between grid items */
-  margin-top: 2rem;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
 }
+
 
 /* Responsive column definitions */
 .grid-cols-1 {
@@ -490,8 +495,8 @@ button {
 
 #suggestions {
   position: absolute;
-  background: white;
-  border: 1px solid #ddd;
+  background: rgb(0, 245, 253);
+  border: 1px solid #007e28;
   width: 100%;
   z-index: 10;
   list-style: none;
@@ -503,10 +508,11 @@ button {
 #suggestions li {
   padding: 10px;
   cursor: pointer;
+  color:#000000
 }
 
 #suggestions li:hover {
-  background-color: #f0f0f0;
+  background-color: #a6a6a6;
 }
 
 #suggestions:not(.hidden) {
