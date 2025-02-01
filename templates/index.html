@@ -64,10 +64,10 @@ document.addEventListener("DOMContentLoaded", function () {
     </script>
 </head>
 
-<body class="bg-gray-100 font-sans flex flex-col min-h-screen">
+<body class="bg-gray-200 font-sans flex flex-col min-h-screen">
 
     <!-- Load Custom JavaScript -->
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="/static/js/script.js"></script>
 </body>
 </html>
 
@@ -112,29 +112,41 @@ document.addEventListener("DOMContentLoaded", function () {
         </svg>
 
         <!-- Location Input -->
-        <input
-          id="location-input"
-          type="text"
-          placeholder="Enter Your Location"
-          class="w-full px-4 py-2 text-gray-700 placeholder-gray-500 bg-white border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition"
-          aria-label="Location Input"
-          autocomplete="off"
-        />
+<div class="relative flex-1 flex justify-center">
+  <div class="relative w-full max-w-lg">
+      <input id="location-input" type="text" placeholder="Enter Your Location"
+          class="w-full px-4 py-2 text-gray-700 bg-white border rounded-full shadow-sm">
+      <ul id="suggestions"
+          class="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-lg shadow-lg hidden max-h-60 overflow-y-auto">
+      </ul>
+  </div>
+  <button id="search-btn" class="px-4 py-2 bg-teal-600 text-white rounded-full ml-2">Search</button>
+</div>
 
-        <!-- Suggestions Dropdown -->
-        <ul 
-        id="suggestions" 
-        class="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-lg shadow-lg hidden z-10 max-h-60 overflow-y-auto"
-        ></ul>
 
       </div>
     </div>
 
-    <!-- Right Section - Login/Register & Cart (More Right) -->
+    <!-- Welcome Message (Conditional Rendering) -->
+    <div class="flex items-center space-x-4">
+      <div class="text-white font-semibold">
+        {% if user %}
+          Welcome, {{ user.first_name }}!
+        {% endif %}
+      </div>
+    </div>
+    
+
+    <!-- Right Section - Login/Register & Cart -->
     <div class="flex items-center space-x-8 justify-end">
-      <!-- Login & Register Buttons -->
-      <a href="/login" class="px-6 py-2 bg-white text-teal-600 font-semibold rounded-lg shadow hover:bg-gray-100 hover:shadow-md transition-all">Login</a>
-      <a href="/register" class="px-6 py-2 bg-teal-700 text-white font-semibold rounded-lg shadow hover:bg-teal-800 hover:shadow-md transition-all">Register</a>
+      {% if user %}
+        <!-- Logout Button -->
+        <a href="{{ url_for('logout') }}" class="px-6 py-2 bg-red-600 text-white font-semibold rounded-lg shadow hover:bg-red-700 hover:shadow-md transition-all ml-8">Logout</a>
+      {% else %}
+        <!-- Login & Register Buttons -->
+        <a href="{{ url_for('login') }}" class="px-6 py-2 bg-white text-teal-600 font-semibold rounded-lg shadow hover:bg-gray-100 hover:shadow-md transition-all">Login</a>
+        <a href="{{ url_for('register') }}" class="px-6 py-2 bg-teal-700 text-white font-semibold rounded-lg shadow hover:bg-teal-800 hover:shadow-md transition-all">Register</a>
+      {% endif %}
 
       <!-- Cart Button (Rightmost) -->
       <button class="focus:outline-none" aria-label="Cart">
@@ -156,7 +168,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 <!-- Hero Section -->
-<section class="bg-gray-200 mt-12 pt-32 pb-12">
+<section class="bg-gray-200 mt-16 pt-32 pb-12">
   <div class="bg-white rounded-lg shadow-lg p-8 mx-auto max-w-6xl flex flex-col md:flex-row items-center gap-8">
     <!-- Left Content Section -->
     <div class="flex-1 space-y-6 text-center md:text-left">
@@ -194,20 +206,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 <section class="max-w-6xl mx-auto py-12">
-  <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Popular Restaurants</h2>
+  <h2 class="text-2xl font-bold text-gray-900 mb-8 text-center">Popular Restaurants</h2>
   <div id="restaurant-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      <!-- Restaurants will be inserted here dynamically -->
+    {% for restaurant in restaurants %}
+      <div class="bg-white rounded-lg shadow-lg p-4 flex flex-col items-center text-center min-h-[220px]">
+        <div class="w-24 h-24 aspect-square">
+          <img src="{{ restaurant.image_url }}" alt="{{ restaurant.name }}" class="w-full h-full object-cover rounded-full">
+        </div>
+        <h3 class="text-lg font-semibold mt-3">{{ restaurant.name }}</h3>
+        <p class="text-gray-600">{{ restaurant.address }}</p>
+        <a href="{{ url_for('menu', restaurant=restaurant.name) }}" class="mt-3 px-4 py-2 bg-teal-600 text-white rounded-lg">View Menu</a>
+      </div>
+    {% endfor %}
   </div>
 </section>
 
-<!-- Ensure restaurant.js is loaded -->
-<script src="/static/js/restaurant.js"></script>
 
 
 
     
-
-
 
 
 

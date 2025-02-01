@@ -10,6 +10,7 @@ html, body {
 
 header {
   height: 64px;
+  z-index: 1000;
 }
 
 .hero-section {
@@ -70,6 +71,7 @@ header {
 
 
 #suggestions {
+  z-index: 1000;
   position: absolute;
   top: 100%;
   left: 0;
@@ -78,7 +80,6 @@ header {
   border: 1px solid #e5e7eb; /* Tailwind'in bg-gray-200 tonu */
   border-radius: 0.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  z-index: 50;
   max-height: 300px;
   overflow-y: auto;
 }
@@ -265,6 +266,11 @@ html,
 1. Remove the margin in all browsers.
 2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.
 */
+
+.header {
+  z-index:1000;
+  position: fixed;
+}
 
 body {
   margin: 0;
@@ -900,8 +906,24 @@ video {
   margin-bottom: 1rem;
 }
 
+.mb-8 {
+  margin-bottom: 2rem;
+}
+
 .ml-4 {
   margin-left: 1rem;
+}
+
+.ml-8 {
+  margin-left: 2rem;
+}
+
+.mr-auto{
+  margin-right:auto;
+}
+
+.mr-4{
+  margin-right: 1rem;
 }
 
 .ml-auto {
@@ -910,6 +932,14 @@ video {
 
 .mt-4 {
   margin-top: 1rem;
+}
+
+.mt-16 {
+  margin-top: 4rem;
+}
+
+.mt-20 {
+  margin-top: 5rem;
 }
 
 .box-border {
@@ -1926,6 +1956,32 @@ video {
   --tw-bg-opacity: 1;
   background-color: rgb(37 99 235 / var(--tw-bg-opacity, 1));
 }
+
+.bg-red-600 {
+  background-color: #dc2626; /* Equivalent to Tailwind's red-600 */
+}
+
+.bg-red-700 {
+  background-color: #b91c1c; /* Equivalent to Tailwind's red-700 */
+}
+
+.bg-red-500 {
+  background-color: #ef4444; /* Equivalent to Tailwind's red-500 */
+}
+
+.bg-red-400 {
+  background-color: #f87171; /* Equivalent to Tailwind's red-400 */
+}
+
+/* Hover Effects */
+.hover\:bg-red-700:hover {
+  background-color: #b91c1c;
+}
+
+.hover\:bg-red-800:hover {
+  background-color: #991b1b;
+}
+
 
 .bg-gray-100 {
   --tw-bg-opacity: 1;
