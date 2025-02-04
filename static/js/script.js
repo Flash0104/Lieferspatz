@@ -291,40 +291,45 @@ async function updateRestaurants(city) {
 
 
 document.addEventListener("DOMContentLoaded", function () {
+    console.log("✅ DOM fully loaded, attaching Logout button event...");
+
     const logoutBtn = document.getElementById("logout-btn");
 
-    if (logoutBtn) {
-        logoutBtn.addEventListener("click", async function () {
-            console.log("🚀 Logout button clicked!");
-
-            try {
-                const response = await fetch("/logout", {
-                    method: "POST",
-                    credentials: "include",
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                console.log("✅ Logout Success:", data);
-
-                // 🔥 Remove session storage & cookies
-                localStorage.clear();
-                sessionStorage.clear();
-                document.cookie.split(";").forEach(cookie => {
-                    document.cookie = cookie.replace(/^ +/, "").replace(/=.*/, "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/");
-                });
-
-                // ✅ Redirect user to force UI refresh
-                window.location.href = "/";
-
-            } catch (error) {
-                console.error("❌ Logout Failed:", error);
-            }
-        });
+    if (!logoutBtn) {
+        console.error("❌ Logout button not found!");
+        return;
     }
+
+    logoutBtn.addEventListener("click", async function () {
+        console.log("🚀 Logout button clicked!");
+
+        try {
+            const response = await fetch("/logout", {
+                method: "POST",
+                credentials: "include",
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log("✅ Logout Success:", data);
+
+            // 🔥 Remove session storage & cookies
+            localStorage.clear();
+            sessionStorage.clear();
+            document.cookie.split(";").forEach(cookie => {
+                document.cookie = cookie.replace(/^ +/, "").replace(/=.*/, "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/");
+            });
+
+            // ✅ Redirect user to force UI refresh
+            window.location.href = "/";
+
+        } catch (error) {
+            console.error("❌ Logout Failed:", error);
+        }
+    });
 });
 
 

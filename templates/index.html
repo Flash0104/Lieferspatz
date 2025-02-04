@@ -134,10 +134,9 @@ document.addEventListener("DOMContentLoaded", function () {
             <span id="welcome-text" class="text-white font-semibold">
                 Welcome, <span class="capitalize">{{ current_user.first_name }}</span>!
             </span>
-            <button id="logout-btn"
-            class="px-5 py-2 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600 transition-all shadow-md">
-            Logout
-          </button>          
+            <button id="logout-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+                Logout
+            </button>                     
           
         {% else %}
             <a href="/login" id="login-btn"
