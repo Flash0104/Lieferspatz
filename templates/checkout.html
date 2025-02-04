@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Lieferspatz - Order and checkout with ease.">
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/static/css/tailwind.css">
+    <title>Checkout - Lieferspatz</title>
+</head>
+
+<body class="bg-gray-200 font-sans flex flex-col min-h-screen">
+    
+    <!-- 🔹 Header -->
+    {% include 'header.html' %}
+
+    <div class="container mx-auto p-6 mt-20">
+        <h1 class="text-2xl font-bold mb-4">Checkout</h1>
+
+        <div class="bg-white shadow-md rounded p-6">
+            <h2 class="text-lg font-semibold">Order Summary</h2>
+            <div class="border-b mb-4"></div>
+
+            {% for item_id, item in cart.items() %}
+            <div class="flex items-center mb-4">
+                <img src="{{ item.image_url }}" alt="{{ item.name }}" class="w-16 h-16 rounded-lg">
+                <div class="ml-4">
+                    <h3 class="font-semibold">{{ item.name }}</h3>
+                    <p>€{{ item.price }} x {{ item.quantity }}</p>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div class="mt-6">
+                <p class="text-xl font-bold">Total: €{{ total_price }}</p>
+                <form action="{{ url_for('checkout') }}" method="post">
+                    <button class="bg-blue-600 text-white px-6 py-2 rounded-lg mt-3">Place Order</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔹 Footer -->
+    {% include 'footer.html' %}
+
+</body>
+</html>

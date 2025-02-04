@@ -67,7 +67,7 @@ document.addEventListener("DOMContentLoaded", function () {
 <body class="bg-gray-200 font-sans flex flex-col min-h-screen">
 
     <!-- Load Custom JavaScript -->
-    <script src="/static/js/script.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
 
@@ -126,44 +126,155 @@ document.addEventListener("DOMContentLoaded", function () {
 
       </div>
     </div>
+    
 
-    <!-- Welcome Message (Conditional Rendering) -->
+
     <div class="flex items-center space-x-4">
-      <div class="text-white font-semibold">
-        {% if user %}
-          Welcome, {{ user.first_name }}!
+        {% if current_user.is_authenticated %}
+            <span id="welcome-text" class="text-white font-semibold">
+                Welcome, <span class="capitalize">{{ current_user.first_name }}</span>!
+            </span>
+            <button id="logout-btn"
+            class="px-5 py-2 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600 transition-all shadow-md">
+            Logout
+          </button>          
+          
+        {% else %}
+            <a href="/login" id="login-btn"
+                class="px-5 py-2 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 transition-all shadow-md">
+                Login
+            </a>
+            <a href="/register" id="register-btn"
+                class="px-5 py-2 bg-green-500 text-white font-medium rounded-lg hover:bg-green-600 transition-all shadow-md">
+                Register
+            </a>
         {% endif %}
-      </div>
     </div>
     
 
-    <!-- Right Section - Login/Register & Cart -->
-    <div class="flex items-center space-x-8 justify-end">
-      {% if user %}
-        <!-- Logout Button -->
-        <a href="{{ url_for('logout') }}" class="px-6 py-2 bg-red-600 text-white font-semibold rounded-lg shadow hover:bg-red-700 hover:shadow-md transition-all ml-8">Logout</a>
-      {% else %}
-        <!-- Login & Register Buttons -->
-        <a href="{{ url_for('login') }}" class="px-6 py-2 bg-white text-teal-600 font-semibold rounded-lg shadow hover:bg-gray-100 hover:shadow-md transition-all">Login</a>
-        <a href="{{ url_for('register') }}" class="px-6 py-2 bg-teal-700 text-white font-semibold rounded-lg shadow hover:bg-teal-800 hover:shadow-md transition-all">Register</a>
-      {% endif %}
 
-      <!-- Cart Button (Rightmost) -->
-      <button class="focus:outline-none" aria-label="Cart">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <path
-            fill-rule="evenodd"
-            clip-rule="evenodd"
-            d="M5.5 18H21l2-12.5H6.5l-.5-3H.9v3h2.5L5.5 18Zm14-9.5-1 6.5H8L7 8.5h12.5ZM7.5 23a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm14-2a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"
-            fill="currentColor">
-          </path>
-        </svg>
+
+
+<!-- Cart Button with Bubble -->
+        <div class="relative">
+          <button id="cart-btn" class="focus:outline-none">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                  <path fill-rule="evenodd" clip-rule="evenodd"
+                      d="M5.5 18H21l2-12.5H6.5l-.5-3H.9v3h2.5L5.5 18Zm14-9.5-1 6.5H8L7 8.5h12.5ZM7.5 23a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm14-2a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"
+                      fill="currentColor"></path>
+              </svg>
+          </button>
+
+          <!-- Bubble for Cart Count -->
+          <div id="cart-bubble" class="absolute top-0 right-0 bg-green-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center hidden">
+              0
+          </div>
+<!-- Background Overlay (Gray & Semi-Transparent) -->
+<div id="cart-overlay" class="fixed inset-0 bg-black bg-opacity-50 opacity-0 pointer-events-none transition-opacity duration-300 z-40"></div>
+
+<!-- Cart Sidebar -->
+<div id="cart-sidebar" class="fixed top-0 right-[-420px] w-[420px] h-full bg-white shadow-2xl transition-all duration-300 flex flex-col">
+    <div class="p-6 flex justify-between items-center border-b">
+      <h2 class="text-xl font-bold">Your Cart</h2>
+      <button id="close-cart" class="text-gray-600 text-3xl cursor-pointer">&times;</button>
+  </div>
+
+  <!-- Cart Items Container -->
+  <div id="cart-items" class="p-6 space-y-4 flex-1 overflow-y-auto">
+      <p class="text-gray-500 text-center">Your cart is empty.</p>
+  </div>
+
+  <!-- Price Summary & Checkout Button -->
+  <div class="p-6 bg-white border-t">
+      <div class="flex justify-between text-lg font-semibold">
+          <span>Total Fee:</span> 
+          <span id="cart-total">$0.00</span>
+      </div>
+
+      <button id="checkout-btn" class="w-full bg-teal-600 text-white py-3 rounded-lg hover:bg-teal-700 transition mt-4">
+          Checkout
       </button>
+  </div>
+</div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        console.log("✅ Document fully loaded!");
+    
+        // Get elements
+        const cartSidebar = document.getElementById("cart-sidebar");
+        const cartOverlay = document.getElementById("cart-overlay");
+        const cartBtn = document.getElementById("cart-btn");
+        const closeCart = document.getElementById("close-cart");
+        const cartItems = document.getElementById("cart-items");
+        const cartTotal = document.getElementById("cart-total");
+    
+        if (!cartSidebar || !cartOverlay || !cartBtn || !closeCart || !cartItems || !cartTotal) {
+            console.error("❌ One or more cart elements are missing! Check your HTML structure.");
+            return;
+        }
+    
+        console.log("🛒 All cart elements found!");
+    
+        function toggleCart() {
+            console.log("🛒 Toggling cart...");
+            cartSidebar.classList.toggle("open");
+            cartOverlay.classList.toggle("visible");
+        }
+    
+        cartBtn.addEventListener("click", toggleCart);
+        closeCart.addEventListener("click", toggleCart);
+        cartOverlay.addEventListener("click", toggleCart);
+    
+        console.log("✅ Cart button event listeners attached!");
+    
+        async function updateCart() {
+            console.log("🔄 Fetching cart data...");
+            try {
+                const response = await fetch("/cart");
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+    
+                const data = await response.json();
+                console.log("✅ Cart data received:", data);
+    
+                cartItems.innerHTML = "";
+    
+                if (!data.items || data.items.length === 0) {
+                    cartItems.innerHTML = '<p class="text-gray-500 text-center mt-10">Your cart is empty.</p>';
+                    cartTotal.innerHTML = "$0.00";
+                } else {
+                    let totalFee = data.items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+                    cartTotal.innerHTML = `<span>Total Fee: $${totalFee.toFixed(2)}</span>`;
+                }
+            } catch (error) {
+                console.error("❌ Error fetching cart:", error);
+            }
+        }
+    
+        updateCart();
+    
+        document.addEventListener("click", async function (event) {
+            if (event.target.classList.contains("remove-item")) {
+                const itemId = event.target.getAttribute("data-id");
+                console.log(`🗑 Removing item with ID: ${itemId}`);
+                await fetch(`/cart/remove/${itemId}`, { method: "POST" });
+                updateCart();
+            }
+        });
+    });
+    </script>
+    
+  
+  
+
+          
+        </div>
     </div>
   </div>
 </header>
-
-
 
 
 
@@ -196,29 +307,32 @@ document.addEventListener("DOMContentLoaded", function () {
         <img src="/static/images/hero_image.png" alt="Delicious meal" class="w-full h-full object-contain rounded-lg" />
       </div>
     </div>
+
   </div>
 </section>
-
-
-
-
   
 
 
 <section class="max-w-6xl mx-auto py-12">
   <h2 class="text-2xl font-bold text-gray-900 mb-8 text-center">Popular Restaurants</h2>
-  <div id="restaurant-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+  
+  <div id="restaurant-list" class="grid grid-cols-4 gap-6">
     {% for restaurant in restaurants %}
-      <div class="bg-white rounded-lg shadow-lg p-4 flex flex-col items-center text-center min-h-[220px]">
-        <div class="w-24 h-24 aspect-square">
-          <img src="{{ restaurant.image_url }}" alt="{{ restaurant.name }}" class="w-full h-full object-cover rounded-full">
+    <div class="p-4 bg-white shadow-md rounded-2xl hover:shadow-lg transition flex flex-col justify-between h-full">
+        <div class="text-center">
+            <h3 class="text-lg font-semibold">{{ restaurant.name }}</h3>
+            <p class="text-gray-600">{{ restaurant.address }}</p>
         </div>
-        <h3 class="text-lg font-semibold mt-3">{{ restaurant.name }}</h3>
-        <p class="text-gray-600">{{ restaurant.address }}</p>
-        <a href="{{ url_for('menu', restaurant=restaurant.name) }}" class="mt-3 px-4 py-2 bg-teal-600 text-white rounded-lg">View Menu</a>
-      </div>
+        <!-- 🆕 "View Menu" Button -->
+        <a href="{{ url_for('restaurant_menu', restaurant_id=restaurant.id) }}"
+           class="mt-4 px-4 py-2 bg-teal-600 text-white rounded-lg text-center hover:bg-teal-700 transition block">
+            View Menu
+        </a>
+    </div>
     {% endfor %}
-  </div>
+</div>
+
+
 </section>
 
 
@@ -256,6 +370,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
 </body>
 </html>

@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const suggestionsList = document.getElementById("suggestions");
     const searchButton = document.getElementById("search-btn");
     const restaurantList = document.getElementById("restaurant-list");
+    const cartBubble = document.getElementById("cart-bubble");
 
     const SUPPORTED_CITIES = ["Duisburg", "Essen", "Düsseldorf", "Köln", "Bonn", "Hamburg", "München", "Berlin"];
 
@@ -22,6 +23,24 @@ document.addEventListener("DOMContentLoaded", function () {
             timeout = setTimeout(() => func.apply(this, args), delay);
         };
     }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch("/check-auth")
+            .then(response => response.json())
+            .then(data => {
+                if (!data.logged_in) {
+                    console.log("User is logged out. Clearing session.");
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    document.cookie.split(";").forEach(cookie => {
+                        document.cookie = cookie.replace(/^ +/, "").replace(/=.*/, "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/");
+                    });
+                    location.reload();
+                }
+            })
+            .catch(error => console.error("Error checking auth:", error));
+
+    
 
     // Fetch location suggestions
     async function fetchLocationSuggestions() {
@@ -86,12 +105,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 card.className = "bg-white rounded-lg shadow-lg p-4 flex flex-col items-center text-center min-h-[220px]";
 
                 card.innerHTML = `
-                    <div class="w-24 h-24 aspect-square">
-                        <img src="${restaurant.image_url || '/static/images/default.png'}" alt="${restaurant.name}" class="w-full h-full object-cover rounded-full">
-                    </div>
-                    <h3 class="text-lg font-semibold mt-3">${restaurant.name}</h3>
-                    <p class="text-gray-600">${restaurant.address}</p>
-                `;
+                <div class="w-24 h-24 aspect-square">
+                    <img src="${restaurant.image_url || '/static/images/default.png'}" alt="${restaurant.name}" class="w-full h-full object-cover rounded-full">
+                </div>
+                <h3 class="text-lg font-semibold mt-3">${restaurant.name}</h3>
+                <p class="text-gray-600">${restaurant.address}</p>
+                <a href="/menu?restaurant=${encodeURIComponent(restaurant.name)}"
+                class="mt-3 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition">
+                View Menu
+                </a>
+            `;
+
 
                 restaurantList.appendChild(card);
             });
@@ -100,6 +124,123 @@ document.addEventListener("DOMContentLoaded", function () {
             restaurantList.innerHTML = `<p class="text-red-500">Error loading restaurants.</p>`;
         }
     }
+
+
+    async function updateCart() {
+        console.log("🔄 Fetching cart data...");
+        
+        try {
+            const response = await fetch("/cart", { method: "GET", credentials: "include" });
+    
+            // 🚨 Detect if the response is an HTML page (meaning it redirected)
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("text/html")) {
+                console.warn("🚨 Redirect detected! User is not logged in.");
+                window.location.href = "/login"; // Redirect user to login page
+                return;
+            }
+    
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+    
+            const data = await response.json(); // ✅ Now safe to parse JSON
+            console.log("✅ Cart data received:", data);
+    
+            cartItems.innerHTML = "";
+    
+            if (!data.items || data.items.length === 0) {
+                cartItems.innerHTML = '<p class="text-gray-500 text-center mt-10">Your cart is empty.</p>';
+                cartTotal.innerHTML = "$0.00";
+            } else {
+                let totalFee = 0;
+                data.items.forEach(item => {
+                    totalFee += item.price * item.quantity;
+                    const cartItem = document.createElement("div");
+                    cartItem.classList.add("flex", "justify-between", "items-center", "border-b", "pb-4", "mt-4");
+    
+                    cartItem.innerHTML = `
+                        <div>
+                            <h3 class="font-semibold">${item.name}</h3>
+                            <p class="text-gray-500">${item.quantity} x $${item.price.toFixed(2)}</p>
+                        </div>
+                        <button class="remove-item text-red-500 font-bold text-lg" data-id="${item.id}">&times;</button>
+                    `;
+    
+                    cartItems.appendChild(cartItem);
+                });
+    
+                cartTotal.innerHTML = `<span>Total Fee: $${totalFee.toFixed(2)}</span>`;
+            }
+        } catch (error) {
+            console.error("❌ Error fetching cart:", error);
+        }
+    }
+    
+    
+    document.addEventListener("click", async function (event) {
+        if (event.target.classList.contains("remove-item")) {
+            const itemId = event.target.getAttribute("data-id");
+    
+            console.log(`🗑 Trying to remove item with ID: ${itemId}`); // Debug log
+    
+            if (!itemId) {
+                console.error("❌ No item ID found!");
+                return;
+            }
+    
+            try {
+                const response = await fetch(`/cart/remove/${itemId}`, { method: "POST" });
+    
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+    
+                console.log("✅ Item removed successfully.");
+                await updateCart();  // Update UI
+            } catch (error) {
+                console.error("❌ Error removing item:", error);
+            }
+        }
+    });
+       
+    
+    
+
+// Fetch cart count on page load
+function updateCartCount() {
+    fetch("/cart/count")
+        .then(response => response.json())
+        .then(data => {
+            if (data.count > 0) {
+                cartBubble.textContent = data.count;
+                cartBubble.classList.remove("hidden");
+            } else {
+                cartBubble.classList.add("hidden");
+            }
+        })
+        .catch(error => console.error("Error fetching cart count:", error));
+}
+
+updateCartCount(); // Initial Load
+
+// 🔥 Event Delegation to Handle Dynamically Added Items
+document.addEventListener("click", function (event) {
+    if (event.target.classList.contains("add-to-cart")) {
+        event.preventDefault();
+
+        const itemId = event.target.dataset.itemId;
+        console.log(`🛒 Adding item ${itemId} to cart...`);
+
+        fetch(`/cart/add/${itemId}`, { method: "POST" })
+            .then(response => response.json())
+            .then(data => {
+                console.log("✅ Item added to cart:", data);
+                updateCart(); // Update the cart UI
+            })
+            .catch(error => console.error("❌ Error adding item:", error));
+    }
+});
 
 // Update restaurants when city changes
 async function updateRestaurants(city) {
@@ -149,6 +290,302 @@ async function updateRestaurants(city) {
 }
 
 
+document.addEventListener("DOMContentLoaded", function () {
+    const logoutBtn = document.getElementById("logout-btn");
+
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", async function () {
+            console.log("🚀 Logout button clicked!");
+
+            try {
+                const response = await fetch("/logout", {
+                    method: "POST",
+                    credentials: "include",
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log("✅ Logout Success:", data);
+
+                // 🔥 Remove session storage & cookies
+                localStorage.clear();
+                sessionStorage.clear();
+                document.cookie.split(";").forEach(cookie => {
+                    document.cookie = cookie.replace(/^ +/, "").replace(/=.*/, "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/");
+                });
+
+                // ✅ Redirect user to force UI refresh
+                window.location.href = "/";
+
+            } catch (error) {
+                console.error("❌ Logout Failed:", error);
+            }
+        });
+    }
+});
+
+
+
+  
+
+
+
+function updateUIAfterLogout() {
+    fetch("/check-auth", { method: "GET", credentials: "include" })
+        .then(response => response.json())
+        .then(data => {
+            console.log("🔄 Checking authentication status:", data);
+
+            const logoutBtn = document.getElementById("logout-btn");
+            const loginBtn = document.getElementById("login-btn");
+            const registerBtn = document.getElementById("register-btn");
+            const welcomeText = document.getElementById("welcome-text");
+
+            if (!data.logged_in) {
+                console.log("✅ User is logged out, updating UI...");
+
+                // Hide Logout & Welcome Text
+                if (logoutBtn) logoutBtn.style.display = "none";
+                if (welcomeText) welcomeText.style.display = "none";
+
+                // Show Login & Register
+                if (loginBtn) loginBtn.style.display = "inline-block";
+                if (registerBtn) registerBtn.style.display = "inline-block";
+            } else {
+                console.warn("🚨 User is still logged in. Something is wrong!");
+            }
+        })
+        .catch(error => console.error("❌ Error checking auth:", error));
+}
+
+// Make function globally available
+window.updateUIAfterLogout = updateUIAfterLogout;
+
+
+
+
+document.addEventListener("DOMContentLoaded", async function () {
+    console.log("✅ Document fully loaded!");
+
+    // Get cart-related elements
+    const cartSidebar = document.getElementById("cart-sidebar");
+    const cartOverlay = document.getElementById("cart-overlay");
+    const cartItems = document.getElementById("cart-items");
+    const cartTotal = document.getElementById("cart-total");
+    const cartBtn = document.getElementById("cart-btn");
+    const closeCartBtn = document.getElementById("close-cart");
+
+    // Ensure essential elements exist
+    if (!cartSidebar || !cartOverlay || !cartItems || !cartTotal || !cartBtn || !closeCartBtn) {
+        console.error("❌ Some cart elements are missing! Check HTML.");
+        return;
+    }
+
+    console.log("🛒 All cart elements found!");
+
+    document.addEventListener("DOMContentLoaded", function () {
+        console.log("✅ Document fully loaded!");
+    
+        document.body.addEventListener("click", function (event) {
+            console.log("🖱 Click detected:", event.target);
+    
+            // ✅ Cart Button Click
+            if (event.target.closest("#cart-btn")) {
+                console.log("🛒 Cart button clicked!");
+                toggleCart();
+            }
+    
+            // ✅ Close Cart Button Click
+            if (event.target.closest("#close-cart")) {
+                console.log("❌ Close button clicked!");
+                toggleCart();
+            }
+    
+            // ✅ Click on Cart Overlay to Close
+            if (event.target.closest("#cart-overlay")) {
+                console.log("❌ Cart overlay clicked! Closing...");
+                toggleCart();
+            }
+        });
+    
+        // ✅ Function to toggle cart sidebar
+        function toggleCart() {
+            console.log("🔄 Toggling cart...");
+            const cartSidebar = document.getElementById("cart-sidebar");
+            const cartOverlay = document.getElementById("cart-overlay");
+    
+            if (!cartSidebar || !cartOverlay) {
+                console.error("❌ Cart elements are missing! Check HTML.");
+                return;
+            }
+    
+            cartSidebar.classList.toggle("translate-x-full");
+            cartOverlay.classList.toggle("opacity-50");
+            cartOverlay.classList.toggle("pointer-events-none");
+        }
+    });
+    
+
+    // ✅ Attach event listeners directly
+    cartBtn.addEventListener("click", function () {
+        console.log("🛒 Cart button clicked!");
+        toggleCart();
+    });
+
+    closeCartBtn.addEventListener("click", function () {
+        console.log("❌ Close button clicked!");
+        toggleCart();
+    });
+
+    cartOverlay.addEventListener("click", function () {
+        console.log("❌ Cart overlay clicked! Closing...");
+        toggleCart();
+    });
+
+    console.log("✅ Cart event listeners attached!");
+
+    // ✅ Fetch Cart Data
+    async function updateCart() {
+        console.log("🔄 Fetching cart data...");
+
+        try {
+            const response = await fetch("/cart");
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log("✅ Cart data received:", data);
+
+            cartItems.innerHTML = "";
+
+            if (!data.items || data.items.length === 0) {
+                cartItems.innerHTML = '<p class="text-gray-500 text-center mt-10">Your cart is empty.</p>';
+                cartTotal.innerHTML = "$0.00";
+            } else {
+                let originalFee = 0;
+                data.items.forEach(item => {
+                    originalFee += item.price * item.quantity;
+
+                    if (!item.id && !item.item_id) {
+                        console.error("❌ Item ID is missing! Skipping this item:", item);
+                        return;
+                    }
+
+                    const itemId = item.id || item.item_id;
+
+                    const cartItem = document.createElement("div");
+                    cartItem.classList.add("flex", "justify-between", "items-center", "border-b", "pb-4", "mt-4");
+
+                    cartItem.innerHTML = `
+                        <div>
+                            <h3 class="font-semibold">${item.name}</h3>
+                            <p class="text-gray-500">${item.quantity} x $${item.price.toFixed(2)}</p>
+                        </div>
+                        <button class="remove-item text-red-500 font-bold text-lg" data-id="${itemId}">&times;</button>
+                    `;
+
+                    cartItems.appendChild(cartItem);
+                });
+
+                let serviceFee = originalFee * 0.15;
+                let totalFee = originalFee + serviceFee;
+
+                cartTotal.innerHTML = `
+                    <div class="text-lg font-semibold flex justify-between">
+                        <span>Original Fee (85%):</span> <span>$${originalFee.toFixed(2)}</span>
+                    </div>
+                    <div class="text-lg font-semibold flex justify-between text-gray-600">
+                        <span>Service Fee (15%):</span> <span>$${serviceFee.toFixed(2)}</span>
+                    </div>
+                    <div class="text-xl font-bold flex justify-between mt-2">
+                        <span>Total Fee:</span> <span>$${totalFee.toFixed(2)}</span>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error("❌ Error fetching cart:", error);
+        }
+    }
+
+    await updateCart(); // Ensure cart is loaded before event listeners
+
+    // ✅ Handle Remove Item Clicks
+    document.addEventListener("click", async function (event) {
+        if (event.target.classList.contains("remove-item")) {
+            const itemId = event.target.getAttribute("data-id");
+
+            console.log(`🗑 Trying to remove item with ID: ${itemId}`);
+
+            if (!itemId || itemId === "undefined") {
+                console.error("❌ No valid item ID found!");
+                return;
+            }
+
+            try {
+                const response = await fetch(`/cart/remove/${itemId}`, { method: "POST" });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                console.log("✅ Item removed successfully.");
+                await updateCart(); // Update UI
+            } catch (error) {
+                console.error("❌ Error removing item:", error);
+            }
+        }
+    });
+
+    console.log("✅ Script fully initialized!");
+});
+
+
+
+
+
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    console.log("✅ Document fully loaded!");
+
+    const cartSidebar = document.getElementById("cart-sidebar");
+    const cartOverlay = document.getElementById("cart-overlay");
+    const cartBtn = document.getElementById("cart-btn");
+    const closeCart = document.getElementById("close-cart");
+    const cartItems = document.getElementById("cart-items");
+    const cartTotal = document.getElementById("cart-total");
+
+    if (!cartSidebar || !cartOverlay || !cartBtn || !closeCart || !cartItems || !cartTotal) {
+        console.warn("⚠️ Some cart elements are missing. Disabling cart functions.");
+        return; // Prevent further execution
+    }
+
+    console.log("🛒 All cart elements found!");
+
+    // ✅ Function to toggle cart sidebar
+    function toggleCart() {
+        console.log("🔄 Toggling cart...");
+        const cartSidebar = document.getElementById("cart-sidebar");
+        const cartOverlay = document.getElementById("cart-overlay");
+
+        if (!cartSidebar || !cartOverlay) {
+            console.error("❌ Cart elements are missing! Check HTML.");
+            return;
+        }
+
+        cartSidebar.classList.toggle("translate-x-full");
+        cartOverlay.classList.toggle("opacity-50");
+        cartOverlay.classList.toggle("pointer-events-none");
+    }
+});
+
+
+
+
     // Search button click event
     searchButton.addEventListener("click", function () {
         const city = locationInput.value.trim();
@@ -170,4 +607,6 @@ async function updateRestaurants(city) {
             suggestionsList.classList.add("hidden");
         }
     });
+});
+
 });

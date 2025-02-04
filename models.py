@@ -39,14 +39,19 @@ class Customer(db.Model):
 # ============================ 🏢 RESTAURANT MODEL ============================ #
 class Restaurant(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)  # ✅ Ensure unique=True is removed
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     name = db.Column(db.String(150), nullable=False)
     address = db.Column(db.String(255), nullable=False)
-    city = db.Column(db.String(100), nullable=False)  # ✅ Ensure city is present
+    city = db.Column(db.String(100), nullable=False)
     image_url = db.Column(db.String(255))
     description = db.Column(db.Text)
+    rating = db.Column(db.Integer, default=0, nullable=False)  # ✅ Added default rating
 
-    user = db.relationship("User", backref="restaurants")  # ✅ Changed to plural 'restaurants'
+    user = db.relationship("User", backref="restaurants")
+    menu_items = db.relationship("MenuItem", backref="restaurant", lazy=True)
+
+
+
 
 # ============================ 📖 MENU & CATEGORY MODELS ============================ #
 class Category(db.Model):
@@ -56,15 +61,29 @@ class Category(db.Model):
 
     restaurant = db.relationship("Restaurant", backref="categories")
 
-class Item(db.Model):
+class Item(db.Model):  # ✅ Updated this instead of MenuItem
     id = db.Column(db.Integer, primary_key=True)
-    category_id = db.Column(db.Integer, db.ForeignKey("category.id"), nullable=False)
-    name = db.Column(db.String(150), nullable=False)
-    description = db.Column(db.Text)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(255))
     price = db.Column(db.Float, nullable=False)
-    image_url = db.Column(db.String(255))
+    image_url = db.Column(db.String(255), default="/static/images/default_food.png")
+    category_id = db.Column(db.Integer, db.ForeignKey("category.id"), nullable=False)
+    restaurant_id = db.Column(db.Integer, db.ForeignKey("restaurant.id"), nullable=False)  # ✅ Added restaurant link
 
     category = db.relationship("Category", backref="items")
+
+
+class MenuItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(255))
+    price = db.Column(db.Float, nullable=False)
+    image_url = db.Column(db.String(255), default="/static/images/default_food.png")
+    category = db.Column(db.String(50), nullable=False)
+    restaurant_id = db.Column(db.Integer, db.ForeignKey("restaurant.id"), nullable=False)
+
+    # ❌ Remove this line: `restaurant = db.relationship("Restaurant", back_populates="menu_items")`
+
 
 # ============================ 🛒 ORDER & PAYMENT MODELS ============================ #
 class Order(db.Model):
@@ -72,7 +91,7 @@ class Order(db.Model):
     customer_id = db.Column(db.Integer, db.ForeignKey("customer.id"), nullable=False)
     restaurant_id = db.Column(db.Integer, db.ForeignKey("restaurant.id"), nullable=False)
     total_price = db.Column(db.Float, default=0)
-    order_status = db.Column(db.String(50), default="shopping")  # pending, preparing, delivered
+    order_status = db.Column(db.String(50), default="shopping")  # ✅ This is the correct column name
     order_date = db.Column(db.DateTime, server_default=db.func.current_timestamp())
 
     customer = db.relationship("Customer", backref="orders")

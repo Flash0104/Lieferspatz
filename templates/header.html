@@ -1,0 +1,73 @@
+<!-- Header -->
+<header class="fixed top-0 left-0 w-full bg-gradient-to-r from-teal-400 to-teal-600 shadow-md z-50">
+    <div class="container mx-auto flex items-center justify-between px-6">
+        <!-- Left Section -->
+        <div class="flex items-center space-x-6">
+            <!-- Menu Icon -->
+            <button class="focus:outline-none" aria-label="Open Menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="cursor-pointer">
+                    <title>Menu</title>
+                    <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M23 4H1v3h22V4Zm0 7H1v3h22v-3ZM1 18h22v3H1v-3Z"
+                        fill="currentColor"></path>
+                </svg>
+            </button>
+
+            <!-- Logo -->
+            <a href="/" aria-label="Lieferspatz Home" class="flex items-center">
+                <img src="/static/favicon.png" alt="Lieferspatz Logo" class="w-10 h-10" />
+                <span class="text-xl font-bold ml-4">Lieferspatz</span>
+            </a>
+        </div>
+
+        <!-- Center Section - Location Input -->
+        <div class="relative flex-1 flex justify-center ml-auto">
+            <div class="flex items-center bg-white rounded-full px-5 py-2 shadow space-x-4 w-full max-w-lg">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="text-gray-500">
+                    <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M12 1c2.4 0 4.9.9 6.7 2.8 3.7 3.7 3.7 9.8 0 13.4L12 24l-6.7-6.7c-3.7-3.7-3.7 9.8 0-13.5C7.1 1.9 9.6 1 12 1Zm0 18.8 4.6-4.6c2.5-2.6 2.5-6.7 0-9.3C15.4 4.7 13.7 4 12 4c-1.7 0-3.4.7-4.6 1.9-2.5 2.6-2.5 6.7 0 9.3l4.6 4.6Zm2-9.3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"
+                        fill="currentColor"></path>
+                </svg>
+                <input id="location-input" type="text" placeholder="Enter Your Location"
+                    class="w-full px-4 py-2 text-gray-700 bg-white border rounded-full shadow-sm">
+            </div>
+        </div>
+
+        <!-- User Info and Cart -->
+        {% if current_user.is_authenticated %}
+        <span id="welcome-text" class="text-white font-semibold">
+            Welcome, <span class="capitalize">{{ current_user.first_name }}</span>!
+        </span>
+        <button id="logout-btn"
+            class="px-5 py-2 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600 transition-all shadow-md">
+            Logout
+        </button>
+    {% else %}
+        <a href="/login" id="login-btn"
+            class="px-5 py-2 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 transition-all shadow-md">
+            Login
+        </a>
+        <a href="/register" id="register-btn"
+            class="px-5 py-2 bg-green-500 text-white font-medium rounded-lg hover:bg-green-600 transition-all shadow-md">
+            Register
+        </a>
+    {% endif %}
+    
+        
+
+            <!-- Cart Button with Bubble -->
+            <div class="relative">
+                <button id="cart-btn" class="focus:outline-none">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                        <path fill-rule="evenodd" clip-rule="evenodd"
+                            d="M5.5 18H21l2-12.5H6.5l-.5-3H.9v3h2.5L5.5 18Zm14-9.5-1 6.5H8L7 8.5h12.5ZM7.5 23a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm14-2a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"
+                            fill="currentColor"></path>
+                    </svg>
+                </button>
+                <div id="cart-bubble" class="absolute top-0 right-0 bg-green-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center hidden">
+                    0
+                </div>
+            </div>
+        </div>
+    </div>
+</header>

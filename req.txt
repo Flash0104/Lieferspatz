@@ -2,8 +2,10 @@ flask
 Flask-Cors
 requests
 python-dotenv
-flask-sqlalchemy    # Optional: If using SQLite
-flask-wtf           # Optional: If using forms
-flask-login         # Optional: If handling user authentication
-flask-bcrypt        # Optional: If encrypting passwords
-googlemaps          # Optional: If working extensively with Google Maps API
+flask-sqlalchemy
+flask-migrate
+flask-wtf
+flask-login
+flask-bcrypt
+googlemaps
+gunicorn
