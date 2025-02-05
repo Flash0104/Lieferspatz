@@ -155,19 +155,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 <!-- Cart Button with Bubble -->
-        <div class="relative">
-          <button id="cart-btn" class="focus:outline-none">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-                  <path fill-rule="evenodd" clip-rule="evenodd"
-                      d="M5.5 18H21l2-12.5H6.5l-.5-3H.9v3h2.5L5.5 18Zm14-9.5-1 6.5H8L7 8.5h12.5ZM7.5 23a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm14-2a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"
-                      fill="currentColor"></path>
-              </svg>
-          </button>
+<div class="relative">
+    <button id="cart-btn" class="focus:outline-none">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+            <path fill-rule="evenodd" clip-rule="evenodd"
+                d="M5.5 18H21l2-12.5H6.5l-.5-3H.9v3h2.5L5.5 18Zm14-9.5-1 6.5H8L7 8.5h12.5ZM7.5 23a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm14-2a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"
+                fill="currentColor"></path>
+        </svg>
+    </button>
 
-          <!-- Bubble for Cart Count -->
-          <div id="cart-bubble" class="absolute top-0 right-0 bg-green-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center hidden">
-              0
-          </div>
+    <!-- Bubble for Cart Count -->
+    <div id="cart-bubble" class="absolute top-0 right-0 bg-green-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center hidden">
+        0
+    </div>
 <!-- Background Overlay (Gray & Semi-Transparent) -->
 <div id="cart-overlay" class="fixed inset-0 bg-black bg-opacity-50 opacity-0 pointer-events-none transition-opacity duration-300 z-40"></div>
 
@@ -190,9 +190,11 @@ document.addEventListener("DOMContentLoaded", function () {
           <span id="cart-total">$0.00</span>
       </div>
 
-      <button id="checkout-btn" class="w-full bg-teal-600 text-white py-3 rounded-lg hover:bg-teal-700 transition mt-4">
+      {% if current_user.is_authenticated and current_user.user_type == 'customer' %}
+      <button id="checkout-btn" class="w-full bg-teal-600 text-white py-3 rounded-lg hover:bg-teal-700 transition mt-4" onclick="window.location.href='{{ url_for('order_history') }}';">
           Checkout
       </button>
+      {% endif %}
   </div>
 </div>
 

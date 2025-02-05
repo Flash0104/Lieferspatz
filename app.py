@@ -126,7 +126,9 @@ def register():
 
 
 @app.route("/logout", methods=["POST"])
+@login_required
 def logout():
+    logout_user()
     session.clear()
     return jsonify({"message": "Logged out successfully!"}), 200
 
@@ -386,6 +388,10 @@ def remove_from_cart(item_id):
 @app.route("/checkout", methods=["GET", "POST"])
 @login_required
 def checkout():
+    if current_user.user_type != 'customer':
+        flash("Access denied.", "danger")
+        return redirect(url_for('home'))
+
     cart = session.get("cart", {})
 
     if request.method == "POST":
@@ -394,9 +400,6 @@ def checkout():
             return redirect(url_for("view_cart"))
 
         total_fee = sum(item["price"] * item["quantity"] for item in cart.values())
-        service_fee = total_fee * 0.15
-        original_fee = total_fee * 0.85
-
         order = Order(user_id=current_user.id, total_price=total_fee)
         db.session.add(order)
         db.session.commit()
@@ -409,29 +412,47 @@ def checkout():
 
         session.pop("cart", None)
         flash("Order placed successfully!", "success")
-        return redirect(url_for("order_overview"))
+        return redirect(url_for("order_history"))
 
-    total_fee = sum(item["price"] * item["quantity"] for item in cart.values())
-    service_fee = total_fee * 0.15
-    original_fee = total_fee * 0.85
-
-    return render_template("checkout.html", cart=cart, total_fee=total_fee, service_fee=service_fee, original_fee=original_fee)
-
-@app.context_processor
-def inject_cart_count():
-    cart = session.get("cart", {})
-    cart_count = sum(item["quantity"] for item in cart.values()) if cart else 0
-    return dict(cart_count=cart_count)
+    return render_template("checkout.html", cart=cart)
 
 
 
-# ============================ 🚀 RUN APP ============================ #
-if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
-        print("✅ Database initialized")
+@app.route('/order_history')
+@login_required
+def order_history():
+    if current_user.user_type != 'customer':
+        flash("Access denied.", "danger")
+        return redirect(url_for('home'))
+
+    orders = Order.query.filter_by(user_id=current_user.id).all()
+    return render_template('order_history.html', orders=orders)
+
+@app.route('/add_product', methods=['GET', 'POST'])
+def add_product():
+    if request.method == 'POST':
+        category_id = request.form['category']
+        name = request.form['name']
+        description = request.form['description']
+        price = request.form['price']
+        image_url = request.form['image_url']
+        
+        new_item = Item(
+            category_id=category_id,
+            name=name,
+            description=description,
+            price=price,
+            image_url=image_url,
+            restaurant_id=current_user.restaurant_id
+        )
+        db.session.add(new_item)
+        db.session.commit()
+        return redirect(url_for('restaurant_dashboard'))
     
-    app.run(debug=True, host="127.0.0.1", port=5000)
+    categories = Category.query.all()
+    return render_template('add_product.html', categories=categories)
+
+
 
 @app.route("/cart/add/<int:item_id>", methods=["POST"])
 @login_required
@@ -446,3 +467,23 @@ def add_to_cart(item_id):
 
     session["cart"] = cart
     return jsonify({"success": True, "message": "Item added to cart!"})
+
+@app.context_processor
+def inject_cart_count():
+    cart = session.get("cart", {})
+    cart_count = sum(item["quantity"] for item in cart.values()) if cart else 0
+    return dict(cart_count=cart_count)
+
+
+
+# ============================ 🚀 RUN APP ============================ #
+if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
+        print("✅ Database initialized")
+        for rule in app.url_map.iter_rules():
+            print(rule)
+    app.run(debug=True, host="127.0.0.1", port=5000)
+
+
+

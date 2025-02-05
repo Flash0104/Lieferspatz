@@ -32,7 +32,7 @@
             <p>Total Fee: ${{ "%.2f"|format(total_fee) }}</p>
             <p>Service Fee (15%): ${{ "%.2f"|format(service_fee) }}</p>
             <p>Original Fee (85%): ${{ "%.2f"|format(original_fee) }}</p>
-            <button onclick="location.href='{{ url_for('checkout') }}'">Checkout</button>
+            <button onclick="location.href='{{ url_for('checkout') }}';">Checkout</button>
         </div>
 
         {% else %}
