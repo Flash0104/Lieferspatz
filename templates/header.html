@@ -52,21 +52,15 @@
         </a>
     {% endif %}
     
-        
-
-            <!-- Cart Button with Bubble -->
-            <div class="relative">
-                <button id="cart-btn" class="focus:outline-none">
-                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-                        <path fill-rule="evenodd" clip-rule="evenodd"
-                            d="M5.5 18H21l2-12.5H6.5l-.5-3H.9v3h2.5L5.5 18Zm14-9.5-1 6.5H8L7 8.5h12.5ZM7.5 23a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm14-2a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"
-                            fill="currentColor"></path>
-                    </svg>
-                </button>
-                <div id="cart-bubble" class="absolute top-0 right-0 bg-green-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center hidden">
-                    0
-                </div>
-            </div>
+        <div class="flex items-center">
+            <span class="mr-4">Balance: ${{ user_balance | default(0.0) | round(2) }}</span>
+            <button id="cart-btn" class="focus:outline-none">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                    <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M5.5 18H21l2-12.5H6.5l-.5-3H.9v3h2.5L5.5 18Zm14-9.5-1 6.5H8L7 8.5h12.5ZM7.5 23a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm14-2a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"
+                        fill="currentColor"></path>
+                </svg>
+            </button>
         </div>
     </div>
 </header>

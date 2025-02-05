@@ -20,7 +20,7 @@ class User(db.Model, UserMixin):
     plz = db.Column(db.String(10), nullable=False)
     
     # Balance Field
-    balance = db.Column(db.Float, default=100.00, nullable=False)
+    balance = db.Column(db.Float, default=0.0)
 
     def set_password(self, password):
         """Hashes the password and stores it."""
@@ -50,6 +50,8 @@ class Restaurant(db.Model):
     image_url = db.Column(db.String(255))
     description = db.Column(db.Text)
     rating = db.Column(db.Integer, default=0, nullable=False)  
+    balance = db.Column(db.Float, default=0.0)
+    menu_items = db.relationship('MenuItem', backref='restaurant', lazy=True)
 
     user = db.relationship("User", backref="restaurant", uselist=False)
 
@@ -95,12 +97,12 @@ class Menu(db.Model):
 
 class MenuItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.String(255))
+    name = db.Column(db.String(150), nullable=False)
     price = db.Column(db.Float, nullable=False)
+    restaurant_id = db.Column(db.Integer, db.ForeignKey('restaurant.id'), nullable=False)
+    description = db.Column(db.String(255))
     image_url = db.Column(db.String(255), default="/static/images/default_food.png")
     category = db.Column(db.String(50), nullable=False)
-    restaurant_id = db.Column(db.Integer, db.ForeignKey("restaurant.id"), nullable=False)
 
     # ❌ Remove this line: `restaurant = db.relationship("Restaurant", back_populates="menu_items")`
 
@@ -110,9 +112,12 @@ class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.Integer, db.ForeignKey("customer.id"), nullable=False)
     restaurant_id = db.Column(db.Integer, db.ForeignKey("restaurant.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     total_price = db.Column(db.Float, default=0)
-    order_status = db.Column(db.String(50), default="shopping")  # ✅ This is the correct column name
+    order_status = db.Column(db.String(50), default="shopping")
     order_date = db.Column(db.DateTime, server_default=db.func.current_timestamp())
+    status = db.Column(db.String(50), default='pending')
+    items = db.relationship('OrderHasItems', backref='order_items', lazy=True, overlaps="order_items")
 
     customer = db.relationship("Customer", backref="orders")
     restaurant = db.relationship("Restaurant", backref="orders")
@@ -123,7 +128,7 @@ class OrderHasItems(db.Model):
     item_id = db.Column(db.Integer, db.ForeignKey("item.id"), nullable=False)
     quantity = db.Column(db.Integer, default=1)
 
-    order = db.relationship("Order", backref="order_items")
+    order = db.relationship("Order", backref="order_items", overlaps="items")
     item = db.relationship("Item", backref="order_items")
 
 class Payment(db.Model):

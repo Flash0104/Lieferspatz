@@ -40,12 +40,13 @@ SUPPORTED_CITIES = ["Duisburg", "Essen", "Düsseldorf", "Köln", "Bonn", "Hambur
 
 
 @app.route("/")
+@login_required
 def home():
-    city = request.args.get("city", "Duisburg")  # Default city
-    user = current_user if current_user.is_authenticated else None  # Ensure logout works
-    restaurants = Restaurant.query.all()
+    city = request.args.get("city", "Duisburg")
+    user = current_user if current_user.is_authenticated else None
     restaurants = Restaurant.query.filter_by(city=city).all()
-    return render_template("index.html", restaurants=restaurants, city=city, user=user)
+    user_balance = current_user.balance if current_user.is_authenticated else 0.0
+    return render_template("index.html", restaurants=restaurants, city=city, user=user, user_balance=user_balance)
 
 @app.before_request
 def make_session_permanent():
@@ -281,19 +282,20 @@ def menu():
     return render_template("menu.html", restaurant=restaurant, menu=menu, menu_items=menu_items)
 
 @app.route("/restaurant/<int:restaurant_id>")
+@login_required
 def restaurant_menu_page(restaurant_id):
     restaurant = Restaurant.query.get_or_404(restaurant_id)
-    menu_items = Item.query.filter_by(restaurant_id=restaurant_id).all()
-
-    # Organize menu items by category
-    menu = {}
+    menu_items = MenuItem.query.filter_by(restaurant_id=restaurant_id).all()
+    categories = {}
+    
     for item in menu_items:
-        category_name = item.category.name if item.category else "Uncategorized"
-        if category_name not in menu:
-            menu[category_name] = []
-        menu[category_name].append(item)
-
-    return render_template("menu.html", restaurant=restaurant, menu=menu, menu_items=menu_items)
+        category_name = item.category if item.category else "Uncategorized"
+        if category_name not in categories:
+            categories[category_name] = []
+        categories[category_name].append(item)
+    
+    user_balance = current_user.balance
+    return render_template("menu.html", restaurant=restaurant, menu=categories, user_balance=user_balance)
 
 
 
@@ -389,10 +391,11 @@ def remove_from_cart(item_id):
 @login_required
 def checkout():
     if current_user.user_type != 'customer':
-        flash("Access denied.", "danger")
+        flash("Unauthorized action!", "danger")
         return redirect(url_for('home'))
 
     cart = session.get("cart", {})
+    print("Cart at Checkout:", cart)  # Debugging line
 
     if request.method == "POST":
         if not cart:
@@ -400,7 +403,7 @@ def checkout():
             return redirect(url_for("view_cart"))
 
         total_fee = sum(item["price"] * item["quantity"] for item in cart.values())
-        order = Order(user_id=current_user.id, total_price=total_fee)
+        order = Order(user_id=current_user.id, total_price=total_fee, status='pending')
         db.session.add(order)
         db.session.commit()
 
@@ -411,6 +414,7 @@ def checkout():
         db.session.commit()
 
         session.pop("cart", None)
+        print("Order Created:", order.id)  # Debugging line
         flash("Order placed successfully!", "success")
         return redirect(url_for("order_history"))
 
@@ -418,15 +422,14 @@ def checkout():
 
 
 
-@app.route('/order_history')
+@app.route("/order_history")
 @login_required
 def order_history():
-    if current_user.user_type != 'customer':
-        flash("Access denied.", "danger")
-        return redirect(url_for('home'))
-
-    orders = Order.query.filter_by(user_id=current_user.id).all()
-    return render_template('order_history.html', orders=orders)
+    current_order = None  # Fetch current order if applicable
+    previous_orders = []  # Fetch previous orders if applicable
+    cart_items = session.get("cart", {}).values()
+    user_balance = current_user.balance  # Retrieve balance from the user model
+    return render_template("order_history.html", current_order=current_order, previous_orders=previous_orders, cart_items=cart_items, user_balance=user_balance)
 
 @app.route('/add_product', methods=['GET', 'POST'])
 def add_product():
@@ -474,7 +477,20 @@ def inject_cart_count():
     cart_count = sum(item["quantity"] for item in cart.values()) if cart else 0
     return dict(cart_count=cart_count)
 
+@app.route('/submit_order', methods=['POST'])
+@login_required
+def submit_order():
+    # Logic to process the order
+    return jsonify({'success': True})
 
+def get_restaurant_from_cart(cart):
+    print(cart)  # Debugging: Check the structure of the cart
+    try:
+        restaurant_id = next(iter(cart.values()))['restaurant_id']
+        return Restaurant.query.get(restaurant_id)
+    except KeyError:
+        print("KeyError: 'restaurant_id' not found in cart")
+        # Handle the error, e.g., return a default value or raise an exception
 
 # ============================ 🚀 RUN APP ============================ #
 if __name__ == "__main__":

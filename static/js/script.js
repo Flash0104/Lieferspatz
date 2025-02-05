@@ -117,7 +117,7 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("🔄 Fetching cart data...");
         
         try {
-            const response = await fetch("/cart", { method: "GET", credentials: "include" });
+            const response = await fetch("/cart");
     
             // 🚨 Detect if the response is an HTML page (meaning it redirected)
             const contentType = response.headers.get("content-type");

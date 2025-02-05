@@ -4,19 +4,118 @@
 <div class="max-w-6xl mx-auto mt-16 p-6 bg-white rounded-lg shadow-lg">
     <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Order History</h2>
 
-    {% if orders %}
+    {% if current_order %}
+    <div class="mb-8">
+        <h3 class="text-xl font-semibold mb-4">Current Order</h3>
+        <div class="p-4 border rounded-lg shadow-md bg-gray-50">
+            <p><strong>Order ID:</strong> {{ current_order.id }}</p>
+            <p><strong>Total Price:</strong> ${{ current_order.total_price }}</p>
+            <p><strong>Status:</strong> {{ current_order.status }}</p>
+            <ul>
+                {% for item in current_order.items %}
+                <li>{{ item.item.name }} - Quantity: {{ item.quantity }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% else %}
+    <p>No current orders found.</p>
+    {% endif %}
+
+    {% if cart_items %}
+    <div class="mb-8">
+        <h3 class="text-xl font-semibold mb-4">Current Cart</h3>
+        <div class="p-4 border rounded-lg shadow-md bg-gray-50" id="cart-container">
+            <!-- Cart items and fees will be dynamically inserted here -->
+        </div>
+    </div>
+    {% endif %}
+
+    <h3 class="text-xl font-semibold mb-4">Previous Orders</h3>
+    {% if previous_orders %}
         <div class="grid grid-cols-1 gap-6">
-            {% for order in orders %}
+            {% for order in previous_orders %}
             <div class="p-4 border rounded-lg shadow-md bg-gray-50">
                 <p><strong>Order ID:</strong> {{ order.id }}</p>
                 <p><strong>Total Price:</strong> ${{ order.total_price }}</p>
-                <p><strong>Date:</strong> {{ order.date }}</p>
                 <p><strong>Status:</strong> {{ order.status }}</p>
             </div>
             {% endfor %}
         </div>
     {% else %}
-        <p class="text-gray-600 text-center">No orders found.</p>
+        <p class="text-gray-600 text-center">No previous orders found.</p>
     {% endif %}
+
+    <button onclick="submitOrder()">Submit Order</button>
 </div>
+
+<script>
+async function fetchCartData() {
+    try {
+        const response = await fetch("/cart");
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log("Cart Data:", data);
+        displayCartData(data.items);
+    } catch (error) {
+        console.error("Error fetching cart:", error);
+    }
+}
+
+function displayCartData(items) {
+    const cartContainer = document.getElementById("cart-container");
+    if (!cartContainer) {
+        console.error("Cart container not found");
+        return;
+    }
+    cartContainer.innerHTML = ""; // Clear existing content
+
+    if (items.length === 0) {
+        cartContainer.innerHTML = "<p>Your cart is empty.</p>";
+        return;
+    }
+
+    let originalFee = 0;
+    items.forEach(item => {
+        originalFee += item.price * item.quantity;
+        const itemElement = document.createElement("div");
+        itemElement.innerHTML = `
+            <p>${item.name} - $${item.price.toFixed(2)} × ${item.quantity}</p>
+        `;
+        cartContainer.appendChild(itemElement);
+    });
+
+    let serviceFee = originalFee * 0.15;
+    let totalFee = originalFee + serviceFee;
+
+    const feeElement = document.createElement("div");
+    feeElement.innerHTML = `
+        <p>Original Fee (85%): $${(originalFee * 0.85).toFixed(2)}</p>
+        <p>Service Fee (15%): $${serviceFee.toFixed(2)}</p>
+        <p><strong>Total Fee:</strong> $${totalFee.toFixed(2)}</p>
+    `;
+    cartContainer.appendChild(feeElement);
+}
+
+document.addEventListener("DOMContentLoaded", fetchCartData);
+
+function submitOrder() {
+    fetch('/submit_order', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Order submitted successfully!');
+            } else {
+                alert('Failed to submit order.');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}
+</script>
+
+{% if current_order %}
+{{ print("Current Order:", current_order) }}
+{% endif %}
 {% endblock %} 
