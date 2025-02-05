@@ -457,19 +457,22 @@ def add_product():
 
 
 
-@app.route("/cart/add/<int:item_id>", methods=["POST"])
+@app.route('/cart/add/<int:item_id>', methods=['POST'])
 @login_required
-def add_to_cart(item_id):
-    item = Item.query.get_or_404(item_id)
-    cart = session.get("cart", {})
-
-    if str(item_id) in cart:
-        cart[str(item_id)]["quantity"] += 1
-    else:
-        cart[str(item_id)] = {"name": item.name, "price": item.price, "quantity": 1}
-
-    session["cart"] = cart
-    return jsonify({"success": True, "message": "Item added to cart!"})
+def add_to_cart(item_id, quantity):
+    item = MenuItem.query.get(item_id)
+    if item:
+        cart = session.get("cart", {})
+        cart[item_id] = {
+            'name': item.name,
+            'price': item.price,
+            'quantity': quantity,
+            'restaurant_id': item.restaurant_id
+        }
+        session["cart"] = cart
+        print(cart)  # Debugging: Check cart contents
+        return jsonify({'success': True, 'message': 'Item added to cart'})
+    return jsonify({'success': False, 'message': 'Item not found'}), 404
 
 @app.context_processor
 def inject_cart_count():
@@ -480,17 +483,45 @@ def inject_cart_count():
 @app.route('/submit_order', methods=['POST'])
 @login_required
 def submit_order():
-    # Logic to process the order
-    return jsonify({'success': True})
+    user = current_user
+    cart = session.get("cart", {})
+    cart_total = calculate_cart_total(cart)
+    restaurant = get_restaurant_from_cart(cart)
+
+    if not restaurant:
+        return jsonify({'success': False, 'message': 'Restaurant not found'}), 400
+
+    if user.balance >= cart_total:
+        user.balance -= cart_total
+        restaurant.balance += cart_total
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Order submitted successfully!'})
+    else:
+        return jsonify({'success': False, 'message': 'Insufficient balance'}), 400
 
 def get_restaurant_from_cart(cart):
-    print(cart)  # Debugging: Check the structure of the cart
     try:
         restaurant_id = next(iter(cart.values()))['restaurant_id']
         return Restaurant.query.get(restaurant_id)
     except KeyError:
         print("KeyError: 'restaurant_id' not found in cart")
-        # Handle the error, e.g., return a default value or raise an exception
+        return None
+
+def calculate_cart_total(cart):
+    total = 0
+    for item in cart.values():
+        total += item['price'] * item['quantity']
+    return total
+
+def add_item_to_cart(cart, item_id, quantity):
+    item = MenuItem.query.get(item_id)
+    if item:
+        cart[item_id] = {
+            'name': item.name,
+            'price': item.price,
+            'quantity': quantity,
+            'restaurant_id': item.restaurant_id  # Ensure this is included
+        }
 
 # ============================ 🚀 RUN APP ============================ #
 if __name__ == "__main__":
