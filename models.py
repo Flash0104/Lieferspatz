@@ -18,6 +18,9 @@ class User(db.Model, UserMixin):
     last_name = db.Column(db.String(100), nullable=False)
     location = db.Column(db.String(255), nullable=False)
     plz = db.Column(db.String(10), nullable=False)
+    
+    # Balance Field
+    balance = db.Column(db.Float, default=100.00, nullable=False)
 
     def set_password(self, password):
         """Hashes the password and stores it."""
@@ -26,6 +29,7 @@ class User(db.Model, UserMixin):
     def check_password(self, password):
         """Verifies the password hash."""
         return check_password_hash(self.password_hash, password)
+
 
 # ============================ 🛠️ CUSTOMER MODEL ============================ #
 class Customer(db.Model):
@@ -39,17 +43,26 @@ class Customer(db.Model):
 # ============================ 🏢 RESTAURANT MODEL ============================ #
 class Restaurant(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, unique=True)
     name = db.Column(db.String(150), nullable=False)
     address = db.Column(db.String(255), nullable=False)
     city = db.Column(db.String(100), nullable=False)
     image_url = db.Column(db.String(255))
     description = db.Column(db.Text)
-    rating = db.Column(db.Integer, default=0, nullable=False)  # ✅ Added default rating
+    rating = db.Column(db.Integer, default=0, nullable=False)  
 
-    user = db.relationship("User", backref="restaurants")
-    menu_items = db.relationship("MenuItem", backref="restaurant", lazy=True)
+    user = db.relationship("User", backref="restaurant", uselist=False)
 
+    @staticmethod
+    def create_for_user(user):
+        """Creates a Restaurant entry for a new restaurant user."""
+        return Restaurant(
+            user_id=user.id,
+            name=f"{user.first_name} {user.last_name}",  # Auto-generate name
+            address=user.location,
+            city="Duisburg",  # Default city, should be updated later
+            image_url="/static/images/default_restaurant.png",
+        )
 
 
 
@@ -60,17 +73,24 @@ class Category(db.Model):
     restaurant_id = db.Column(db.Integer, db.ForeignKey("restaurant.id"), nullable=False)
 
     restaurant = db.relationship("Restaurant", backref="categories")
+    items = db.relationship("Item", backref="category")
 
-class Item(db.Model):  # ✅ Updated this instead of MenuItem
+class Item(db.Model):  # ✅ Keep this as the main item model
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.String(255))
+    description = db.Column(db.String(255), nullable=True)
     price = db.Column(db.Float, nullable=False)
-    image_url = db.Column(db.String(255), default="/static/images/default_food.png")
-    category_id = db.Column(db.Integer, db.ForeignKey("category.id"), nullable=False)
-    restaurant_id = db.Column(db.Integer, db.ForeignKey("restaurant.id"), nullable=False)  # ✅ Added restaurant link
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
+    restaurant_id = db.Column(db.Integer, db.ForeignKey('restaurant.id'), nullable=False)
+    image_url = db.Column(db.String(255), nullable=True, default="/static/images/default_food.png")
 
-    category = db.relationship("Category", backref="items")
+
+class Menu(db.Model):
+    __tablename__ = 'menu'  # ✅ Ensure the table name is correct
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    restaurant_id = db.Column(db.Integer, db.ForeignKey('restaurant.id'), nullable=False)
 
 
 class MenuItem(db.Model):

@@ -7,7 +7,7 @@ from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user, AnonymousUserMixin
 from flask_cors import CORS
-from models import db, init_db, User, Customer, Restaurant, Category, Item, Order, OrderHasItems, Payment, MenuItem  # Import models
+from models import db, init_db, User, Customer, Restaurant, Category, Item, Order, OrderHasItems, Payment, MenuItem, Menu   # Import models
 
 # ============================ ⚙️ CONFIGURATION ============================ #
 
@@ -25,7 +25,7 @@ login_manager = LoginManager(app)
 login_manager.login_view = "login"
 CORS(app)
 
-# User Loader (Ensure It’s After DB Init)
+# User Loader (Ensure It's After DB Init)
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -43,7 +43,7 @@ SUPPORTED_CITIES = ["Duisburg", "Essen", "Düsseldorf", "Köln", "Bonn", "Hambur
 def home():
     city = request.args.get("city", "Duisburg")  # Default city
     user = current_user if current_user.is_authenticated else None  # Ensure logout works
-
+    restaurants = Restaurant.query.all()
     restaurants = Restaurant.query.filter_by(city=city).all()
     return render_template("index.html", restaurants=restaurants, city=city, user=user)
 
@@ -73,7 +73,7 @@ def login():
 
 @app.route("/check-auth")
 def check_auth():
-    return jsonify({"logged_in": current_user.is_authenticated})
+    return jsonify({"logged_in": "user_id" in session})
 
 
 
@@ -110,6 +110,12 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
+        # 🔥 If user is a restaurant, create a restaurant entry
+        if user_type == "restaurant":
+            new_restaurant = Restaurant.create_for_user(new_user)
+            db.session.add(new_restaurant)
+            db.session.commit()
+
         flash("Registration successful! You can now login.", "success")
         return redirect(url_for("login"))
 
@@ -118,25 +124,11 @@ def register():
 
 
 
-@app.route("/logout", methods=["POST"])
-@login_required
-def logout():
-    try:
-        logout_user()  # Logs out the user
-        session.clear()  # Clears session
 
-        response = make_response(jsonify({"message": "Logged out successfully"}))
-        
-        # 🔥 Expire session cookies to ensure logout
-        response.set_cookie("session", "", expires=0, path="/")
-        response.set_cookie("remember_token", "", expires=0, path="/")
-        response.set_cookie("session_id", "", expires=0, path="/")
-        
-        print("✅ Successfully logged out.")
-        return response
-    except Exception as e:
-        print(f"❌ Logout error: {e}")
-        return jsonify({"error": "Internal Server Error"}), 500
+@app.route("/logout", methods=["POST"])
+def logout():
+    session.clear()
+    return jsonify({"message": "Logged out successfully!"}), 200
 
 
 
@@ -259,24 +251,6 @@ def restaurants():
     restaurants = Restaurant.query.all()
     return render_template("restaurants.html", restaurants=restaurants)
 
-@app.route("/restaurant/<int:restaurant_id>")
-def restaurant_menu(restaurant_id):
-    restaurant = Restaurant.query.get_or_404(restaurant_id)
-    items = Item.query.filter_by(restaurant_id=restaurant.id).all()
-
-    print(f"🔍 Debugging: {restaurant.name} (ID: {restaurant.id}) has {len(items)} items")
-
-    # Organizing menu items by category
-    menu = {}
-    for item in items:
-        category_name = item.category.name if item.category else "Uncategorized"
-        if category_name not in menu:
-            menu[category_name] = []
-        menu[category_name].append(item)
-
-    return render_template("menu.html", restaurant=restaurant, menu=menu)
-
-
 
 @app.route("/menu")
 def menu():
@@ -304,6 +278,20 @@ def menu():
 
     return render_template("menu.html", restaurant=restaurant, menu=menu, menu_items=menu_items)
 
+@app.route("/restaurant/<int:restaurant_id>")
+def restaurant_menu_page(restaurant_id):
+    restaurant = Restaurant.query.get_or_404(restaurant_id)
+    menu_items = Item.query.filter_by(restaurant_id=restaurant_id).all()
+
+    # Organize menu items by category
+    menu = {}
+    for item in menu_items:
+        category_name = item.category.name if item.category else "Uncategorized"
+        if category_name not in menu:
+            menu[category_name] = []
+        menu[category_name].append(item)
+
+    return render_template("menu.html", restaurant=restaurant, menu=menu, menu_items=menu_items)
 
 
 
@@ -351,13 +339,10 @@ def cart_count():
 @app.route("/cart")
 @login_required
 def view_cart():
-    if not current_user.is_authenticated:
-        return jsonify({"error": "Unauthorized", "message": "User must be logged in"}), 401
-
     cart = session.get("cart", {})
     formatted_cart = [
         {
-            "id": key,  # Make sure the key is used as id
+            "id": key,
             "name": value["name"],
             "price": value["price"],
             "quantity": value["quantity"]
@@ -408,7 +393,11 @@ def checkout():
             flash("Your cart is empty.", "warning")
             return redirect(url_for("view_cart"))
 
-        order = Order(user_id=current_user.id, total_price=sum(item["price"] * item["quantity"] for item in cart.values()))
+        total_fee = sum(item["price"] * item["quantity"] for item in cart.values())
+        service_fee = total_fee * 0.15
+        original_fee = total_fee * 0.85
+
+        order = Order(user_id=current_user.id, total_price=total_fee)
         db.session.add(order)
         db.session.commit()
 
@@ -422,7 +411,11 @@ def checkout():
         flash("Order placed successfully!", "success")
         return redirect(url_for("order_overview"))
 
-    return render_template("checkout.html", cart=cart)
+    total_fee = sum(item["price"] * item["quantity"] for item in cart.values())
+    service_fee = total_fee * 0.15
+    original_fee = total_fee * 0.85
+
+    return render_template("checkout.html", cart=cart, total_fee=total_fee, service_fee=service_fee, original_fee=original_fee)
 
 @app.context_processor
 def inject_cart_count():
@@ -439,3 +432,17 @@ if __name__ == "__main__":
         print("✅ Database initialized")
     
     app.run(debug=True, host="127.0.0.1", port=5000)
+
+@app.route("/cart/add/<int:item_id>", methods=["POST"])
+@login_required
+def add_to_cart(item_id):
+    item = Item.query.get_or_404(item_id)
+    cart = session.get("cart", {})
+
+    if str(item_id) in cart:
+        cart[str(item_id)]["quantity"] += 1
+    else:
+        cart[str(item_id)] = {"name": item.name, "price": item.price, "quantity": 1}
+
+    session["cart"] = cart
+    return jsonify({"success": True, "message": "Item added to cart!"})

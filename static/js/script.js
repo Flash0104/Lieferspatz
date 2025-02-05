@@ -1,617 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Lieferspatz - Find your favorite restaurants and order delicious food in just a few clicks.">
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/static/css/tailwind.css">
+
+    <title>Lieferspatz - Home</title>
+
+    <!-- Load OpenStreetMap Leaflet Library -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
 document.addEventListener("DOMContentLoaded", function () {
-    const locationInput = document.getElementById("location-input");
-    const suggestionsList = document.getElementById("suggestions");
-    const searchButton = document.getElementById("search-btn");
-    const restaurantList = document.getElementById("restaurant-list");
-    const cartBubble = document.getElementById("cart-bubble");
+    const locationInput = document.getElementById('location-input');
+    const suggestionsList = document.getElementById('suggestions');
 
-    const SUPPORTED_CITIES = ["Duisburg", "Essen", "Düsseldorf", "Köln", "Bonn", "Hamburg", "München", "Berlin"];
-
-    // Get city from URL or default to Duisburg
-    const urlParams = new URLSearchParams(window.location.search);
-    let currentCity = urlParams.get("city") || "Duisburg";
-    locationInput.value = currentCity;
-
-    // Fetch restaurants for the selected city
-    fetchRestaurants(currentCity);
-
-    // Debounce function to limit API calls
-    function debounce(func, delay) {
-        let timeout;
-        return function (...args) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), delay);
-        };
-    }
-
-    document.addEventListener("DOMContentLoaded", function () {
-        fetch("/check-auth")
-            .then(response => response.json())
-            .then(data => {
-                if (!data.logged_in) {
-                    console.log("User is logged out. Clearing session.");
-                    localStorage.clear();
-                    sessionStorage.clear();
-                    document.cookie.split(";").forEach(cookie => {
-                        document.cookie = cookie.replace(/^ +/, "").replace(/=.*/, "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/");
-                    });
-                    location.reload();
-                }
-            })
-            .catch(error => console.error("Error checking auth:", error));
-
-    
-
-    // Fetch location suggestions
-    async function fetchLocationSuggestions() {
-        let query = locationInput.value.trim();
-        if (query.length < 2) {
-            suggestionsList.classList.add("hidden");
-            return;
-        }
-
-        try {
-            const response = await fetch(`/api/places?query=${query}`);
-            const data = await response.json();
-
-            if (Array.isArray(data.places) && data.places.length > 0) {
-                suggestionsList.innerHTML = "";
-                data.places.forEach((place) => {
-                    let city = place.address.city || place.address.town || place.address.village;
-                    if (!city || !SUPPORTED_CITIES.includes(city)) return;
-
-                    let item = document.createElement("li");
-                    item.textContent = city;
-                    item.classList.add("cursor-pointer", "p-2", "hover:bg-gray-200");
-                    item.addEventListener("click", () => selectCity(city));
-                    suggestionsList.appendChild(item);
-                });
-
-                suggestionsList.classList.remove("hidden");
-            } else {
-                suggestionsList.classList.add("hidden");
-            }
-        } catch (error) {
-            console.error("❌ Error fetching location data:", error);
-            suggestionsList.classList.add("hidden");
-        }
-    }
-
-    locationInput.addEventListener("input", debounce(fetchLocationSuggestions, 300));
-
-    // Select city and update restaurants
-    function selectCity(city) {
-        locationInput.value = city;
-        suggestionsList.classList.add("hidden");
-        updateRestaurants(city);
-    }
-
-    // Fetch and update restaurant list dynamically
-    async function fetchRestaurants(city) {
-        try {
-            const response = await fetch(`/api/restaurants?city=${encodeURIComponent(city)}`);
-            const data = await response.json();
-            console.log(`📊 Restaurants in ${city}:`, data);
-
-            restaurantList.innerHTML = ""; // Clear existing content
-
-            if (data.restaurants.length === 0) {
-                restaurantList.innerHTML = `<p class="text-gray-600 text-center">No restaurants found in ${city}.</p>`;
-                return;
-            }
-
-            data.restaurants.forEach((restaurant) => {
-                const card = document.createElement("div");
-                card.className = "bg-white rounded-lg shadow-lg p-4 flex flex-col items-center text-center min-h-[220px]";
-
-                card.innerHTML = `
-                <div class="w-24 h-24 aspect-square">
-                    <img src="${restaurant.image_url || '/static/images/default.png'}" alt="${restaurant.name}" class="w-full h-full object-cover rounded-full">
-                </div>
-                <h3 class="text-lg font-semibold mt-3">${restaurant.name}</h3>
-                <p class="text-gray-600">${restaurant.address}</p>
-                <a href="/menu?restaurant=${encodeURIComponent(restaurant.name)}"
-                class="mt-3 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition">
-                View Menu
-                </a>
-            `;
-
-
-                restaurantList.appendChild(card);
-            });
-        } catch (error) {
-            console.error("❌ Error fetching restaurant data:", error);
-            restaurantList.innerHTML = `<p class="text-red-500">Error loading restaurants.</p>`;
-        }
-    }
-
-
-    async function updateCart() {
-        console.log("🔄 Fetching cart data...");
-        
-        try {
-            const response = await fetch("/cart", { method: "GET", credentials: "include" });
-    
-            // 🚨 Detect if the response is an HTML page (meaning it redirected)
-            const contentType = response.headers.get("content-type");
-            if (contentType && contentType.includes("text/html")) {
-                console.warn("🚨 Redirect detected! User is not logged in.");
-                window.location.href = "/login"; // Redirect user to login page
-                return;
-            }
-    
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-    
-            const data = await response.json(); // ✅ Now safe to parse JSON
-            console.log("✅ Cart data received:", data);
-    
-            cartItems.innerHTML = "";
-    
-            if (!data.items || data.items.length === 0) {
-                cartItems.innerHTML = '<p class="text-gray-500 text-center mt-10">Your cart is empty.</p>';
-                cartTotal.innerHTML = "$0.00";
-            } else {
-                let totalFee = 0;
-                data.items.forEach(item => {
-                    totalFee += item.price * item.quantity;
-                    const cartItem = document.createElement("div");
-                    cartItem.classList.add("flex", "justify-between", "items-center", "border-b", "pb-4", "mt-4");
-    
-                    cartItem.innerHTML = `
-                        <div>
-                            <h3 class="font-semibold">${item.name}</h3>
-                            <p class="text-gray-500">${item.quantity} x $${item.price.toFixed(2)}</p>
-                        </div>
-                        <button class="remove-item text-red-500 font-bold text-lg" data-id="${item.id}">&times;</button>
-                    `;
-    
-                    cartItems.appendChild(cartItem);
-                });
-    
-                cartTotal.innerHTML = `<span>Total Fee: $${totalFee.toFixed(2)}</span>`;
-            }
-        } catch (error) {
-            console.error("❌ Error fetching cart:", error);
-        }
-    }
-    
-    
-    document.addEventListener("click", async function (event) {
-        if (event.target.classList.contains("remove-item")) {
-            const itemId = event.target.getAttribute("data-id");
-    
-            console.log(`🗑 Trying to remove item with ID: ${itemId}`); // Debug log
-    
-            if (!itemId) {
-                console.error("❌ No item ID found!");
-                return;
-            }
-    
-            try {
-                const response = await fetch(`/cart/remove/${itemId}`, { method: "POST" });
-    
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-    
-                console.log("✅ Item removed successfully.");
-                await updateCart();  // Update UI
-            } catch (error) {
-                console.error("❌ Error removing item:", error);
-            }
-        }
-    });
-       
-    
-    
-
-// Fetch cart count on page load
-function updateCartCount() {
-    fetch("/cart/count")
-        .then(response => response.json())
-        .then(data => {
-            if (data.count > 0) {
-                cartBubble.textContent = data.count;
-                cartBubble.classList.remove("hidden");
-            } else {
-                cartBubble.classList.add("hidden");
-            }
-        })
-        .catch(error => console.error("Error fetching cart count:", error));
-}
-
-updateCartCount(); // Initial Load
-
-// 🔥 Event Delegation to Handle Dynamically Added Items
-document.addEventListener("click", function (event) {
-    if (event.target.classList.contains("add-to-cart")) {
-        event.preventDefault();
-
-        const itemId = event.target.dataset.itemId;
-        console.log(`🛒 Adding item ${itemId} to cart...`);
-
-        fetch(`/cart/add/${itemId}`, { method: "POST" })
-            .then(response => response.json())
-            .then(data => {
-                console.log("✅ Item added to cart:", data);
-                updateCart(); // Update the cart UI
-            })
-            .catch(error => console.error("❌ Error adding item:", error));
-    }
-});
-
-// Update restaurants when city changes
-async function updateRestaurants(city) {
-    if (!city) return;
-
-    console.log(`🔍 Fetching restaurants for: ${city}`);
-
-    try {
-        const response = await fetch(`/api/restaurants?city=${encodeURIComponent(city)}`);
-
-        if (!response.ok) throw new Error("Failed to fetch restaurants.");
-
-        const data = await response.json();
-        console.log("📊 Received Restaurants:", data);
-
-        // Ensure data.restaurants is an array
-        const restaurantArray = data.restaurants;
-        if (!Array.isArray(restaurantArray)) {
-            console.error("❌ Error: Expected an array but got", restaurantArray);
-            return;
-        }
-
-        // Clear the existing restaurant list
-        const restaurantList = document.getElementById("restaurant-list");
-        restaurantList.innerHTML = "";
-
-        // Populate with new data
-        restaurantArray.forEach(restaurant => {
-            const card = document.createElement("div");
-            card.className = "bg-white rounded-lg shadow-lg p-4 flex flex-col items-center text-center min-h-[220px]";
-            
-            card.innerHTML = `
-                <div class="w-24 h-24 aspect-square">
-                    <img src="${restaurant.image_url || '/static/images/default.png'}" alt="${restaurant.name}" class="w-full h-full object-cover rounded-full">
-                </div>
-                <h3 class="text-lg font-semibold mt-3">${restaurant.name}</h3>
-                <p class="text-gray-600">${restaurant.address}</p>
-                <a href="/menu?restaurant=${encodeURIComponent(restaurant.name)}" class="mt-3 px-4 py-2 bg-teal-600 text-white rounded-lg">View Menu</a>
-            `;
-
-            restaurantList.appendChild(card);
-        });
-
-    } catch (error) {
-        console.error("❌ Error updating restaurants:", error);
-    }
-}
-
-
-document.addEventListener("DOMContentLoaded", function () {
-    console.log("✅ DOM fully loaded, attaching Logout button event...");
-
-    const logoutBtn = document.getElementById("logout-btn");
-
-    if (!logoutBtn) {
-        console.error("❌ Logout button not found!");
+    if (!suggestionsList) {
+        console.error("❌ suggestionsList element not found!");
         return;
     }
 
-    logoutBtn.addEventListener("click", async function () {
-        console.log("🚀 Logout button clicked!");
+    locationInput.addEventListener('input', function () {
+        const query = this.value.trim();
+        if (query.length > 2) {
+            fetch(`/api/places?query=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log("✅ API Response:", data);
+                    suggestionsList.innerHTML = '';
+                    if (data.places && data.places.length > 0) {
+                        data.places.forEach(place => {
+                            const li = document.createElement('li');
+                            li.textContent = place.name;
+                            li.classList.add('px-4', 'py-2', 'hover:bg-gray-100', 'cursor-pointer');
+                            li.addEventListener('click', () => {
+                                locationInput.value = place.name;
+                                suggestionsList.classList.add('hidden');
+                            });
+                            suggestionsList.appendChild(li);
+                        });
+                        suggestionsList.classList.remove('hidden');
+                    } else {
+                        suggestionsList.classList.add('hidden');
+                    }
+                })
+                .catch(error => console.error('❌ Error fetching places:', error));
+        } else {
+            suggestionsList.classList.add('hidden');
+        }
+    });
 
-        try {
-            const response = await fetch("/logout", {
-                method: "POST",
-                credentials: "include",
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            console.log("✅ Logout Success:", data);
-
-            // 🔥 Remove session storage & cookies
-            localStorage.clear();
-            sessionStorage.clear();
-            document.cookie.split(";").forEach(cookie => {
-                document.cookie = cookie.replace(/^ +/, "").replace(/=.*/, "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/");
-            });
-
-            // ✅ Redirect user to force UI refresh
-            window.location.href = "/";
-
-        } catch (error) {
-            console.error("❌ Logout Failed:", error);
+    document.addEventListener('click', function (event) {
+        if (!locationInput.contains(event.target) && !suggestionsList.contains(event.target)) {
+            suggestionsList.classList.add('hidden');
         }
     });
 });
 
+    </script>
+</head>
 
+<body class="bg-gray-200 font-sans flex flex-col min-h-screen">
 
-  
-
-
-
-function updateUIAfterLogout() {
-    fetch("/check-auth", { method: "GET", credentials: "include" })
-        .then(response => response.json())
-        .then(data => {
-            console.log("🔄 Checking authentication status:", data);
-
-            const logoutBtn = document.getElementById("logout-btn");
-            const loginBtn = document.getElementById("login-btn");
-            const registerBtn = document.getElementById("register-btn");
-            const welcomeText = document.getElementById("welcome-text");
-
-            if (!data.logged_in) {
-                console.log("✅ User is logged out, updating UI...");
-
-                // Hide Logout & Welcome Text
-                if (logoutBtn) logoutBtn.style.display = "none";
-                if (welcomeText) welcomeText.style.display = "none";
-
-                // Show Login & Register
-                if (loginBtn) loginBtn.style.display = "inline-block";
-                if (registerBtn) registerBtn.style.display = "inline-block";
-            } else {
-                console.warn("🚨 User is still logged in. Something is wrong!");
-            }
-        })
-        .catch(error => console.error("❌ Error checking auth:", error));
-}
-
-// Make function globally available
-window.updateUIAfterLogout = updateUIAfterLogout;
+    <!-- Load Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
 
 
 
 
-document.addEventListener("DOMContentLoaded", async function () {
-    console.log("✅ Document fully loaded!");
+<!-- Header -->
+<header class="fixed top-0 left-0 w-full bg-gradient-to-r from-teal-400 to-teal-600 shadow-md z-50">
+  <div class="container mx-auto flex items-center justify-between px-6">
+    <!-- Left Section -->
+    <div class="flex items-center space-x-6">
+      <!-- Menu Icon -->
+      <button class="focus:outline-none" aria-label="Open Menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="cursor-pointer">
+          <title>Menu</title>
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M23 4H1v3h22V4Zm0 7H1v3h22v-3ZM1 18h22v3H1v-3Z"
+            fill="currentColor">
+          </path>
+        </svg>
+      </button>
 
-    // Get cart-related elements
-    const cartSidebar = document.getElementById("cart-sidebar");
-    const cartOverlay = document.getElementById("cart-overlay");
-    const cartItems = document.getElementById("cart-items");
-    const cartTotal = document.getElementById("cart-total");
-    const cartBtn = document.getElementById("cart-btn");
-    const closeCartBtn = document.getElementById("close-cart");
+      <!-- Logo -->
+      <a href="/" aria-label="Lieferspatz Home" class="flex items-center">
+        <img src="/static/favicon.png" alt="Lieferspatz Logo" class="w-10 h-10" />
+        <span class="text-xl font-bold ml-4">Lieferspatz</span>
+      </a>
+    </div>
 
-    // Ensure essential elements exist
-    if (!cartSidebar || !cartOverlay || !cartItems || !cartTotal || !cartBtn || !closeCartBtn) {
-        console.error("❌ Some cart elements are missing! Check HTML.");
-        return;
-    }
+    <!-- Center Section - Location Input (Pushed Slightly Right) -->
+    <div class="relative flex-1 flex justify-center ml-auto">
+      <div class="flex items-center bg-white rounded-full px-5 py-2 shadow space-x-4 w-full max-w-lg">
+        <!-- Location Icon -->
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="text-gray-500">
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M12 1c2.4 0 4.9.9 6.7 2.8 3.7 3.7 3.7 9.8 0 13.4L12 24l-6.7-6.7c-3.7-3.7-3.7-9.8 0-13.5C7.1 1.9 9.6 1 12 1Zm0 18.8 4.6-4.6c2.5-2.6 2.5-6.7 0-9.3C15.4 4.7 13.7 4 12 4c-1.7 0-3.4.7-4.6 1.9-2.5 2.6-2.5 6.7 0 9.3l4.6 4.6Zm2-9.3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"
+            fill="currentColor"></path>
+        </svg>
 
-    console.log("🛒 All cart elements found!");
+        <!-- Location Input -->
+<div class="relative flex-1 flex justify-center">
+  <div class="relative w-full max-w-lg">
+      <input id="location-input" type="text" placeholder="Enter Your Location"
+          class="w-full px-4 py-2 text-gray-700 bg-white border rounded-full shadow-sm">
+      <ul id="suggestions"
+          class="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-lg shadow-lg hidden max-h-60 overflow-y-auto">
+      </ul>
+  </div>
+  <button id="search-btn" class="px-4 py-2 bg-teal-600 text-white rounded-full ml-2">Search</button>
+</div>
 
+
+      </div>
+    </div>
+    
+
+
+    <div class="flex items-center space-x-4">
+        {% if current_user.is_authenticated %}
+            <span id="welcome-text" class="text-white font-semibold">
+                Welcome, <span class="capitalize">{{ current_user.first_name }}</span>!
+            </span>
+            <button id="logout-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+                Logout
+            </button>                     
+          
+        {% else %}
+            <a href="/login" id="login-btn"
+                class="px-5 py-2 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 transition-all shadow-md">
+                Login
+            </a>
+            <a href="/register" id="register-btn"
+                class="px-5 py-2 bg-green-500 text-white font-medium rounded-lg hover:bg-green-600 transition-all shadow-md">
+                Register
+            </a>
+        {% endif %}
+    </div>
+    
+
+
+
+
+<!-- Cart Button with Bubble -->
+        <div class="relative">
+          <button id="cart-btn" class="focus:outline-none">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                  <path fill-rule="evenodd" clip-rule="evenodd"
+                      d="M5.5 18H21l2-12.5H6.5l-.5-3H.9v3h2.5L5.5 18Zm14-9.5-1 6.5H8L7 8.5h12.5ZM7.5 23a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm14-2a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"
+                      fill="currentColor"></path>
+              </svg>
+          </button>
+
+          <!-- Bubble for Cart Count -->
+          <div id="cart-bubble" class="absolute top-0 right-0 bg-green-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center hidden">
+              0
+          </div>
+<!-- Background Overlay (Gray & Semi-Transparent) -->
+<div id="cart-overlay" class="fixed inset-0 bg-black bg-opacity-50 opacity-0 pointer-events-none transition-opacity duration-300 z-40"></div>
+
+<!-- Cart Sidebar -->
+<div id="cart-sidebar" class="fixed top-0 right-[-420px] w-[420px] h-full bg-white shadow-2xl transition-all duration-300 flex flex-col">
+    <div class="p-6 flex justify-between items-center border-b">
+      <h2 class="text-xl font-bold">Your Cart</h2>
+      <button id="close-cart" class="text-gray-600 text-3xl cursor-pointer">&times;</button>
+  </div>
+
+  <!-- Cart Items Container -->
+  <div id="cart-items" class="p-6 space-y-4 flex-1 overflow-y-auto">
+      <p class="text-gray-500 text-center">Your cart is empty.</p>
+  </div>
+
+  <!-- Price Summary & Checkout Button -->
+  <div class="p-6 bg-white border-t">
+      <div class="flex justify-between text-lg font-semibold">
+          <span>Total Fee:</span> 
+          <span id="cart-total">$0.00</span>
+      </div>
+
+      <button id="checkout-btn" class="w-full bg-teal-600 text-white py-3 rounded-lg hover:bg-teal-700 transition mt-4">
+          Checkout
+      </button>
+  </div>
+</div>
+
+
+<script>
     document.addEventListener("DOMContentLoaded", function () {
         console.log("✅ Document fully loaded!");
     
-        document.body.addEventListener("click", function (event) {
-            console.log("🖱 Click detected:", event.target);
+        // Get elements
+        const cartSidebar = document.getElementById("cart-sidebar");
+        const cartOverlay = document.getElementById("cart-overlay");
+        const cartBtn = document.getElementById("cart-btn");
+        const closeCart = document.getElementById("close-cart");
+        const cartItems = document.getElementById("cart-items");
+        const cartTotal = document.getElementById("cart-total");
     
-            // ✅ Cart Button Click
-            if (event.target.closest("#cart-btn")) {
-                console.log("🛒 Cart button clicked!");
-                toggleCart();
-            }
+        if (!cartSidebar || !cartOverlay || !cartBtn || !closeCart || !cartItems || !cartTotal) {
+            console.error("❌ One or more cart elements are missing! Check your HTML structure.");
+            return;
+        }
     
-            // ✅ Close Cart Button Click
-            if (event.target.closest("#close-cart")) {
-                console.log("❌ Close button clicked!");
-                toggleCart();
-            }
+        console.log("🛒 All cart elements found!");
     
-            // ✅ Click on Cart Overlay to Close
-            if (event.target.closest("#cart-overlay")) {
-                console.log("❌ Cart overlay clicked! Closing...");
-                toggleCart();
-            }
-        });
-    
-        // ✅ Function to toggle cart sidebar
         function toggleCart() {
-            console.log("🔄 Toggling cart...");
-            const cartSidebar = document.getElementById("cart-sidebar");
-            const cartOverlay = document.getElementById("cart-overlay");
-    
-            if (!cartSidebar || !cartOverlay) {
-                console.error("❌ Cart elements are missing! Check HTML.");
-                return;
-            }
-    
-            cartSidebar.classList.toggle("translate-x-full");
-            cartOverlay.classList.toggle("opacity-50");
-            cartOverlay.classList.toggle("pointer-events-none");
+            console.log("🛒 Toggling cart...");
+            cartSidebar.classList.toggle("open");
+            cartOverlay.classList.toggle("visible");
         }
-    });
     
-
-    // ✅ Attach event listeners directly
-    cartBtn.addEventListener("click", function () {
-        console.log("🛒 Cart button clicked!");
-        toggleCart();
-    });
-
-    closeCartBtn.addEventListener("click", function () {
-        console.log("❌ Close button clicked!");
-        toggleCart();
-    });
-
-    cartOverlay.addEventListener("click", function () {
-        console.log("❌ Cart overlay clicked! Closing...");
-        toggleCart();
-    });
-
-    console.log("✅ Cart event listeners attached!");
-
-    // ✅ Fetch Cart Data
-    async function updateCart() {
-        console.log("🔄 Fetching cart data...");
-
-        try {
-            const response = await fetch("/cart");
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            console.log("✅ Cart data received:", data);
-
-            cartItems.innerHTML = "";
-
-            if (!data.items || data.items.length === 0) {
-                cartItems.innerHTML = '<p class="text-gray-500 text-center mt-10">Your cart is empty.</p>';
-                cartTotal.innerHTML = "$0.00";
-            } else {
-                let originalFee = 0;
-                data.items.forEach(item => {
-                    originalFee += item.price * item.quantity;
-
-                    if (!item.id && !item.item_id) {
-                        console.error("❌ Item ID is missing! Skipping this item:", item);
-                        return;
-                    }
-
-                    const itemId = item.id || item.item_id;
-
-                    const cartItem = document.createElement("div");
-                    cartItem.classList.add("flex", "justify-between", "items-center", "border-b", "pb-4", "mt-4");
-
-                    cartItem.innerHTML = `
-                        <div>
-                            <h3 class="font-semibold">${item.name}</h3>
-                            <p class="text-gray-500">${item.quantity} x $${item.price.toFixed(2)}</p>
-                        </div>
-                        <button class="remove-item text-red-500 font-bold text-lg" data-id="${itemId}">&times;</button>
-                    `;
-
-                    cartItems.appendChild(cartItem);
-                });
-
-                let serviceFee = originalFee * 0.15;
-                let totalFee = originalFee + serviceFee;
-
-                cartTotal.innerHTML = `
-                    <div class="text-lg font-semibold flex justify-between">
-                        <span>Original Fee (85%):</span> <span>$${originalFee.toFixed(2)}</span>
-                    </div>
-                    <div class="text-lg font-semibold flex justify-between text-gray-600">
-                        <span>Service Fee (15%):</span> <span>$${serviceFee.toFixed(2)}</span>
-                    </div>
-                    <div class="text-xl font-bold flex justify-between mt-2">
-                        <span>Total Fee:</span> <span>$${totalFee.toFixed(2)}</span>
-                    </div>
-                `;
-            }
-        } catch (error) {
-            console.error("❌ Error fetching cart:", error);
-        }
-    }
-
-    await updateCart(); // Ensure cart is loaded before event listeners
-
-    // ✅ Handle Remove Item Clicks
-    document.addEventListener("click", async function (event) {
-        if (event.target.classList.contains("remove-item")) {
-            const itemId = event.target.getAttribute("data-id");
-
-            console.log(`🗑 Trying to remove item with ID: ${itemId}`);
-
-            if (!itemId || itemId === "undefined") {
-                console.error("❌ No valid item ID found!");
-                return;
-            }
-
+        cartBtn.addEventListener("click", toggleCart);
+        closeCart.addEventListener("click", toggleCart);
+        cartOverlay.addEventListener("click", toggleCart);
+    
+        console.log("✅ Cart button event listeners attached!");
+    
+        async function updateCart() {
+            console.log("🔄 Fetching cart data...");
             try {
-                const response = await fetch(`/cart/remove/${itemId}`, { method: "POST" });
-
+                const response = await fetch("/cart");
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
-
-                console.log("✅ Item removed successfully.");
-                await updateCart(); // Update UI
+    
+                const data = await response.json();
+                console.log("✅ Cart data received:", data);
+    
+                cartItems.innerHTML = "";
+    
+                if (!data.items || data.items.length === 0) {
+                    cartItems.innerHTML = '<p class="text-gray-500 text-center mt-10">Your cart is empty.</p>';
+                    cartTotal.innerHTML = "$0.00";
+                } else {
+                    let totalFee = data.items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+                    cartTotal.innerHTML = `<span>Total Fee: $${totalFee.toFixed(2)}</span>`;
+                }
             } catch (error) {
-                console.error("❌ Error removing item:", error);
+                console.error("❌ Error fetching cart:", error);
             }
         }
+    
+        updateCart();
+    
+        document.addEventListener("click", async function (event) {
+            if (event.target.classList.contains("remove-item")) {
+                const itemId = event.target.getAttribute("data-id");
+                console.log(`🗑 Removing item with ID: ${itemId}`);
+                await fetch(`/cart/remove/${itemId}`, { method: "POST" });
+                updateCart();
+            }
+        });
     });
+    </script>
+    
+  
+  
 
-    console.log("✅ Script fully initialized!");
-});
-
-
-
-
-
-
-
-document.addEventListener("DOMContentLoaded", function () {
-    console.log("✅ Document fully loaded!");
-
-    const cartSidebar = document.getElementById("cart-sidebar");
-    const cartOverlay = document.getElementById("cart-overlay");
-    const cartBtn = document.getElementById("cart-btn");
-    const closeCart = document.getElementById("close-cart");
-    const cartItems = document.getElementById("cart-items");
-    const cartTotal = document.getElementById("cart-total");
-
-    if (!cartSidebar || !cartOverlay || !cartBtn || !closeCart || !cartItems || !cartTotal) {
-        console.warn("⚠️ Some cart elements are missing. Disabling cart functions.");
-        return; // Prevent further execution
-    }
-
-    console.log("🛒 All cart elements found!");
-
-    // ✅ Function to toggle cart sidebar
-    function toggleCart() {
-        console.log("🔄 Toggling cart...");
-        const cartSidebar = document.getElementById("cart-sidebar");
-        const cartOverlay = document.getElementById("cart-overlay");
-
-        if (!cartSidebar || !cartOverlay) {
-            console.error("❌ Cart elements are missing! Check HTML.");
-            return;
-        }
-
-        cartSidebar.classList.toggle("translate-x-full");
-        cartOverlay.classList.toggle("opacity-50");
-        cartOverlay.classList.toggle("pointer-events-none");
-    }
-});
+          
+        </div>
+    </div>
+  </div>
+</header>
 
 
 
+<!-- Hero Section -->
+<section class="bg-gray-200 mt-16 pt-32 pb-12">
+  <div class="bg-white rounded-lg shadow-lg p-8 mx-auto max-w-6xl flex flex-col md:flex-row items-center gap-8">
+    <!-- Left Content Section -->
+    <div class="flex-1 space-y-6 text-center md:text-left">
+      <h1 class="text-4xl font-extrabold text-gray-900 leading-tight">
+        Hungry? <span class="text-teal-600">Order now!</span>
+      </h1>
+      <p class="text-gray-700 text-lg">
+        Satisfy your cravings with just a few clicks. Browse, order, and enjoy the best food delivered to your doorstep.
+      </p>
+      <div class="flex flex-wrap gap-4 justify-center md:justify-start">
+        <button id="getLocationButton" class="px-6 py-3 bg-teal-600 text-white text-lg font-medium rounded-lg shadow hover:bg-teal-700 focus:ring-4 focus:ring-teal-300 focus:outline-none transition-all">
+          Get My Address
+        </button>
+        <a href="/login" class="px-6 py-3 bg-gray-200 text-gray-800 text-lg font-medium rounded-lg shadow hover:bg-gray-300 focus:ring-4 focus:ring-gray-200 focus:outline-none transition-all">
+          Login
+        </a>
+        <a href="/register" class="px-6 py-3 bg-teal-600 text-white text-lg font-medium rounded-lg shadow hover:bg-teal-700 focus:ring-4 focus:ring-teal-300 focus:outline-none transition-all">
+          Register
+        </a>
+      </div>
+    </div>
+    <!-- Right Graphic Section -->
+    <div class="flex-1 flex justify-center items-center">
+      <div class="bg-gray-200 rounded-lg w-64 h-64 flex items-center justify-center shadow-inner">
+        <img src="/static/images/hero_image.png" alt="Delicious meal" class="w-full h-full object-contain rounded-lg" />
+      </div>
+    </div>
 
-    // Search button click event
-    searchButton.addEventListener("click", function () {
-        const city = locationInput.value.trim();
-        if (city) updateRestaurants(city);
-    });
+  </div>
+</section>
+  
 
-    // Listen for Enter key to trigger search
-    locationInput.addEventListener("keypress", function (event) {
-        if (event.key === "Enter") {
-            event.preventDefault();
-            const city = locationInput.value.trim();
-            if (city) updateRestaurants(city);
-        }
-    });
 
-    // Hide suggestions when clicking outside
-    document.addEventListener("click", (e) => {
-        if (!locationInput.contains(e.target) && !suggestionsList.contains(e.target)) {
-            suggestionsList.classList.add("hidden");
-        }
-    });
-});
+<section class="max-w-6xl mx-auto py-12">
+  <h2 class="text-2xl font-bold text-gray-900 mb-8 text-center">Popular Restaurants</h2>
+  
+  <div id="restaurant-list" class="grid grid-cols-4 gap-6">
+    {% for restaurant in restaurants %}
+    <div class="p-4 bg-white shadow-md rounded-2xl hover:shadow-lg transition flex flex-col justify-between h-full">
+        <div class="text-center">
+            <h3 class="text-lg font-semibold">{{ restaurant.name }}</h3>
+            <p class="text-gray-600">{{ restaurant.address }}</p>
+        </div>
+        <!-- 🆕 "View Menu" Button -->
+        <a href="{{ url_for('restaurant_menu', restaurant_id=restaurant.id) }}"
+           class="mt-4 px-4 py-2 bg-teal-600 text-white rounded-lg text-center hover:bg-teal-700 transition block">
+            View Menu
+        </a>
+    </div>
+    {% endfor %}
+</div>
 
-});
+
+</section>
+
+
+
+
+    
+
+
+
+<footer class="bg-gray-800 text-white py-8 mt-auto">
+  <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0">
+      
+      <!-- Payment Methods -->
+      <div class="flex items-center space-x-4">
+          <img src="/static/images/visa.svg" alt="Visa" class="w-12">
+          <img src="/static/images/mastercard.svg" alt="MasterCard" class="w-12">
+          <img src="/static/images/maestro.svg" alt="Maestro" class="w-12">
+          <img src="/static/images/amex.svg" alt="American Express" class="w-12">
+          <img src="/static/images/paypal.svg" alt="PayPal" class="w-12">
+      </div>
+
+      <!-- Subscription Form -->
+      <div class="flex items-center space-x-3">
+          <input
+              type="email"
+              placeholder="Enter your email"
+              class="w-72 p-3 rounded-lg border border-gray-400 text-gray-800 focus:outline-none focus:border-teal-400"
+          />
+          <button class="bg-teal-500 text-white px-6 py-3 rounded-lg hover:bg-teal-600">
+              Subscribe
+          </button>
+      </div>
+  </div>
+</footer>
+
+
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+</body>
+</html>

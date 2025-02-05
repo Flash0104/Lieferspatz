@@ -1,40 +1,34 @@
 document.addEventListener("DOMContentLoaded", async function () {
-    const restaurantList = document.getElementById("restaurant-list");
+    console.log("📥 Fetching menu items...");
+    const restaurantId = window.location.pathname.split("/").pop(); // Get restaurant ID from URL
+    const menuContainer = document.getElementById("menu-container");
 
-    async function fetchRestaurants() {
-        try {
-            // Ensure the correct file path
-            response = await fetch("./static/js/restaurant.json");
+    try {
+        const response = await fetch(`/api/restaurant/${restaurantId}/menu`);
+        const menuItems = await response.json();
 
-            console.log(response)
+        console.log("✅ Menu Items Received:", menuItems);
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
+        menuContainer.innerHTML = ""; // Clear existing content
 
-            const restaurants = await response.json();
-            restaurantList.innerHTML = "";
+        menuItems.forEach(item => {
+            const menuItem = document.createElement("div");
+            menuItem.className = "bg-white rounded-lg shadow-md p-4";
 
-            restaurants.forEach(restaurant => {
-                const card = document.createElement("div");
-                card.className = "bg-white rounded-lg shadow-lg p-4 flex flex-col items-center text-center min-h-[220px]";
+            menuItem.innerHTML = `
+                <img src="${item.image_url}" alt="${item.name}" class="w-24 h-24 object-cover rounded-lg">
+                <h3 class="text-lg font-semibold">${item.name}</h3>
+                <p class="text-gray-600">${item.description}</p>
+                <p class="text-green-600 font-bold">$${item.price}</p>
+                <button class="add-to-cart bg-teal-600 text-white px-4 py-2 rounded-lg mt-2" data-id="${item.id}">
+                    Add to Cart
+                </button>
+            `;
 
-                card.innerHTML = `
-                    <div class="w-24 h-24 aspect-square">
-                        <img src="${restaurant.image}" alt="${restaurant.name}" class="w-full h-full object-cover rounded-full">
-                    </div>
-                    <h3 class="text-lg font-semibold mt-3">${restaurant.name}</h3>
-                    <p class="text-gray-600">${restaurant.rating} ⭐ (${restaurant.reviews}+) • ${restaurant.delivery_time}</p>
-                `;
+            menuContainer.appendChild(menuItem);
+        });
 
-                restaurantList.appendChild(card);
-            });
-
-        } catch (error) {
-            console.error("Error loading restaurants:", error);
-            restaurantList.innerHTML = "<p class='text-red-500'>Failed to load restaurant data.</p>";
-        }
+    } catch (error) {
+        console.error("❌ Error fetching menu:", error);
     }
-
-    fetchRestaurants();
 });

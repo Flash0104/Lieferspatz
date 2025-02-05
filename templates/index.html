@@ -245,8 +245,32 @@ document.addEventListener("DOMContentLoaded", function () {
                     cartItems.innerHTML = '<p class="text-gray-500 text-center mt-10">Your cart is empty.</p>';
                     cartTotal.innerHTML = "$0.00";
                 } else {
-                    let totalFee = data.items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-                    cartTotal.innerHTML = `<span>Total Fee: $${totalFee.toFixed(2)}</span>`;
+                    data.items.forEach(item => {
+                        cartItems.innerHTML += `
+                            <div class="flex justify-between items-center p-4 border-b">
+                                <div>
+                                    <h3 class="font-semibold">${item.name}</h3>
+                                    <p class="text-gray-600">$${item.price.toFixed(2)} × ${item.quantity}</p>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="font-semibold">$${(item.price * item.quantity).toFixed(2)}</span>
+                                    <button class="remove-item text-red-500 hover:text-red-700" data-id="${item.id}">×</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+    
+                    let originalFee = data.items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+                    let serviceFee = originalFee * 0.15;
+                    let totalFee = originalFee + serviceFee;
+    
+                    cartTotal.innerHTML = `
+                        <div class="text-right">
+                            <p>Original Fee (85%): $${originalFee.toFixed(2)}</p>
+                            <p>Service Fee (15%): $${serviceFee.toFixed(2)}</p>
+                            <p class="font-bold">Total Fee: $${totalFee.toFixed(2)}</p>
+                        </div>
+                    `;
                 }
             } catch (error) {
                 console.error("❌ Error fetching cart:", error);
@@ -323,10 +347,10 @@ document.addEventListener("DOMContentLoaded", function () {
             <p class="text-gray-600">{{ restaurant.address }}</p>
         </div>
         <!-- 🆕 "View Menu" Button -->
-        <a href="{{ url_for('restaurant_menu', restaurant_id=restaurant.id) }}"
-           class="mt-4 px-4 py-2 bg-teal-600 text-white rounded-lg text-center hover:bg-teal-700 transition block">
+            <a href="{{ url_for('restaurant_menu_page', restaurant_id=restaurant.id) }}"
+            class="mt-4 px-4 py-2 bg-teal-600 text-white rounded-lg text-center hover:bg-teal-700 transition block">
             View Menu
-        </a>
+            </a>
     </div>
     {% endfor %}
 </div>

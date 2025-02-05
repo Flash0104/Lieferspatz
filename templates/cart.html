@@ -18,26 +18,21 @@
         <h1 class="text-2xl font-bold mb-4">Your Cart</h1>
 
         {% if cart %}
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {% for item_id, item in cart.items() %}
-            <div class="flex items-center bg-white shadow rounded-lg p-4">
-                <img src="{{ item.image_url }}" alt="{{ item.name }}" class="w-16 h-16 rounded-lg">
-                <div class="ml-4 flex-grow">
-                    <h2 class="text-lg font-semibold">{{ item.name }}</h2>
-                    <p class="text-gray-600">€{{ item.price }} x {{ item.quantity }}</p>
-                </div>
-                <form action="{{ url_for('remove_from_cart', item_id=item_id) }}" method="post">
-                    <button class="bg-red-500 text-white px-3 py-1 rounded">Remove</button>
-                </form>
-            </div>
-            {% endfor %}
-        </div>
-
-        <div class="mt-6">
-            <p class="text-xl font-bold">Total: €{{ total_price }}</p>
-            <form action="{{ url_for('checkout') }}" method="post">
-                <button class="bg-green-500 text-white px-6 py-2 rounded-lg mt-3">Checkout</button>
-            </form>
+        <div class="cart">
+            <h2>Your Cart</h2>
+            <ul>
+                {% for item_id, item in cart.items() %}
+                <li>
+                    <span>{{ item.name }}</span>
+                    <span>Quantity: {{ item.quantity }}</span>
+                    <span>Price: ${{ "%.2f"|format(item.price * item.quantity) }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            <p>Total Fee: ${{ "%.2f"|format(total_fee) }}</p>
+            <p>Service Fee (15%): ${{ "%.2f"|format(service_fee) }}</p>
+            <p>Original Fee (85%): ${{ "%.2f"|format(original_fee) }}</p>
+            <button onclick="location.href='{{ url_for('checkout') }}'">Checkout</button>
         </div>
 
         {% else %}
