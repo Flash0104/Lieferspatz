@@ -124,6 +124,10 @@ def handler(event, context):
     return app
 
 if __name__ == "__main__":
+    # Create all tables if they don't exist
+    with app.app_context():
+        db.create_all()
+    # Run the app
     app.run(debug=True)
 
 
