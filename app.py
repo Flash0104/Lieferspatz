@@ -36,6 +36,31 @@ os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 # Initialize database
 db.init_app(app)
 
+# Initialize login manager
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+@app.route("/")
+def home():
+    """Home page showing available restaurants."""
+    try:
+        # Get all open restaurants
+        restaurants = Restaurant.query.filter_by(is_open=True).order_by(Restaurant.display_order).all()
+        
+        # Get all unique cities from the database for the city filter
+        cities = db.session.query(Restaurant.city).distinct().all()
+        city_list = [city[0] for city in cities if city[0]]
+        
+        return render_template("index.html", restaurants=restaurants, cities=city_list)
+    except Exception as e:
+        logger.error(f"Error in home route: {str(e)}")
+        return render_template("error.html", error=str(e))
+
 @app.route("/search")
 def search():
     query = request.args.get("q", "")
