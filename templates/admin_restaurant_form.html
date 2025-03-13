@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}{% if restaurant %}Edit Restaurant{% else %}Add Restaurant{% endif %} - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="flex items-center mb-8">
+        <a href="{{ url_for('admin_dashboard') }}" class="text-teal-600 hover:text-teal-800 mr-4">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+        <h1 class="text-3xl font-bold text-teal-700">{% if restaurant %}Edit Restaurant{% else %}Add New Restaurant{% endif %}</h1>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="p-4 mb-6 rounded-lg {% if category == 'success' %}bg-green-100 text-green-800{% elif category == 'danger' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <form method="POST" enctype="multipart/form-data" action="{{ url_for('admin_edit_restaurant', restaurant_id=restaurant.id) if restaurant else url_for('admin_add_restaurant') }}">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Restaurant Information -->
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Restaurant Information</h2>
+                    
+                    <div class="mb-4">
+                        <label for="name" class="block text-gray-700 font-medium mb-2">Restaurant Name</label>
+                        <input type="text" id="name" name="name" value="{{ restaurant.name if restaurant else '' }}" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="address" class="block text-gray-700 font-medium mb-2">Address</label>
+                        <input type="text" id="address" name="address" value="{{ restaurant.address if restaurant else '' }}" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="city" class="block text-gray-700 font-medium mb-2">City</label>
+                        <select id="city" name="city" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500">
+                            {% for city in supported_cities %}
+                                <option value="{{ city }}" {% if restaurant and restaurant.city == city %}selected{% endif %}>{{ city }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="description" class="block text-gray-700 font-medium mb-2">Description</label>
+                        <textarea id="description" name="description" rows="3" 
+                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500">{{ restaurant.description if restaurant else '' }}</textarea>
+                    </div>
+                </div>
+                
+                <!-- Restaurant Image and Status -->
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Image & Status</h2>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-medium mb-2">Current Image</label>
+                        <div class="mb-2">
+                            <img src="{{ restaurant.image_url or '/static/images/default_restaurant.png' }}" alt="{{ restaurant.name if restaurant else 'Restaurant' }}" 
+                                 class="w-32 h-32 object-cover rounded-lg border border-gray-300">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="image_file" class="block text-gray-700 font-medium mb-2">Upload New Image</label>
+                        <input type="file" id="image_file" name="image_file" accept="image/*"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="image_url" class="block text-gray-700 font-medium mb-2">Or Image URL</label>
+                        <input type="url" id="image_url" name="image_url" placeholder="https://example.com/image.jpg"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-medium mb-2">Restaurant Status</label>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="is_open" name="is_open" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
+                                   {% if restaurant and restaurant.is_open %}checked{% endif %}>
+                            <label for="is_open" class="ml-2 block text-gray-700">
+                                Open for Orders
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- User Account Information (Only for new restaurants) -->
+            {% if not restaurant %}
+            <div class="border-t pt-6 mt-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Restaurant Owner Account</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="mb-4">
+                        <label for="first_name" class="block text-gray-700 font-medium mb-2">First Name</label>
+                        <input type="text" id="first_name" name="first_name" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="last_name" class="block text-gray-700 font-medium mb-2">Last Name</label>
+                        <input type="text" id="last_name" name="last_name" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="email" class="block text-gray-700 font-medium mb-2">Email</label>
+                        <input type="email" id="email" name="email" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="password" class="block text-gray-700 font-medium mb-2">Password</label>
+                        <input type="password" id="password" name="password" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500">
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="flex justify-end mt-6">
+                <a href="{{ url_for('admin_dashboard') }}" class="bg-gray-300 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-400 transition mr-4">
+                    Cancel
+                </a>
+                <button type="submit" class="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition">
+                    {% if restaurant %}Update Restaurant{% else %}Create Restaurant{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
+{% endblock %} 

@@ -49,11 +49,25 @@ class Restaurant(db.Model):
     city = db.Column(db.String(100), nullable=False)
     image_url = db.Column(db.String(255))
     description = db.Column(db.Text)
-    rating = db.Column(db.Integer, default=0, nullable=False)  
+    rating = db.Column(db.Float, default=0.0, nullable=False)  
     balance = db.Column(db.Float, default=0.0)
+    is_open = db.Column(db.Boolean, default=False)
+    display_order = db.Column(db.Integer, default=0)  # New field for ordering restaurants
     menu_items = db.relationship('MenuItem', backref='restaurant', lazy=True)
 
     user = db.relationship("User", backref="restaurant", uselist=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "address": self.address,
+            "city": self.city,
+            "image_url": self.image_url or "/static/images/default_restaurant.png",
+            "description": self.description,
+            "rating": self.rating,
+            "is_open": self.is_open
+        }
 
     @staticmethod
     def create_for_user(user):
@@ -64,6 +78,7 @@ class Restaurant(db.Model):
             address=user.location,
             city="Duisburg",  # Default city, should be updated later
             image_url="/static/images/default_restaurant.png",
+            is_open=False,
         )
 
 
@@ -114,9 +129,12 @@ class Order(db.Model):
     restaurant_id = db.Column(db.Integer, db.ForeignKey("restaurant.id"), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     total_price = db.Column(db.Float, default=0)
+    original_fee = db.Column(db.Float, default=0)  # Original fee for restaurant
+    service_fee = db.Column(db.Float, default=0)   # Service fee for admin
     order_status = db.Column(db.String(50), default="shopping")
     order_date = db.Column(db.DateTime, server_default=db.func.current_timestamp())
     status = db.Column(db.String(50), default='pending')
+    cashback_applied = db.Column(db.Boolean, default=False)
     items = db.relationship('OrderHasItems', backref='order_items', lazy=True, overlaps="order_items")
 
     customer = db.relationship("Customer", backref="orders")
@@ -139,6 +157,36 @@ class Payment(db.Model):
     transaction_date = db.Column(db.DateTime, server_default=db.func.current_timestamp())
 
     order = db.relationship("Order", backref="payment")
+
+# ============================ ⭐ RATING MODEL ============================ #
+class Rating(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    restaurant_id = db.Column(db.Integer, db.ForeignKey("restaurant.id"), nullable=False)
+    order_id = db.Column(db.Integer, db.ForeignKey("order.id"), nullable=False, unique=True)
+    rating = db.Column(db.Float, nullable=False)  # Rating from 0 to 5, with 0.5 increments
+    created_at = db.Column(db.DateTime, server_default=db.func.current_timestamp())
+    
+    # Relationships
+    user = db.relationship("User", backref="ratings")
+    restaurant = db.relationship("Restaurant", backref="ratings")
+    order = db.relationship("Order", backref="rating", uselist=False)
+
+# ============================ 👑 ADMIN MODEL ============================ #
+class Admin(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, unique=True)
+    total_earnings = db.Column(db.Float, default=0.0)  # Total earnings from service fees
+    
+    user = db.relationship("User", backref="admin", uselist=False)
+    
+    @staticmethod
+    def create_for_user(user):
+        """Creates an Admin entry for a new admin user."""
+        return Admin(
+            user_id=user.id,
+            total_earnings=0.0
+        )
 
 # ============================ 🔧 DATABASE INITIALIZATION FUNCTION ============================ #
 def init_db(app):

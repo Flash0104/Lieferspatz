@@ -1,0 +1,145 @@
+/**
+ * ULTRA-SPECIFIC HEADER FIX
+ * This file contains the most specific CSS selectors possible to ensure
+ * the header is always fixed at the top of the page.
+ */
+
+/* Maximum specificity selectors targeting the header */
+html body header,
+body > header,
+html > body > header,
+body div > header,
+header.fixed,
+header#main-header,
+.header-wrapper header,
+header[role="banner"],
+header[data-fixed="true"],
+div > header,
+#main-header,
+.header,
+nav.fixed,
+[role="banner"] {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  z-index: 9999 !important; /* Ultra-high z-index to ensure visibility */
+  height: auto !important;
+  min-height: 60px !important;
+  background: linear-gradient(to right, #0d9488, #0f766e) !important;
+  background-image: none !important;
+  background-color: #0d9488 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  transform: translateZ(0) !important;
+  -webkit-transform: translateZ(0) !important;
+  will-change: transform !important;
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  contain: layout style !important;
+}
+
+/* Ensure body has proper padding to account for fixed header */
+html body,
+body.header-fixed,
+body {
+  padding-top: 60px !important;
+  margin-top: 0 !important;
+}
+
+/* Force fix any potential background image issue */
+html body header::before, 
+html body header::after,
+header[data-fixed="true"]::before, 
+header[data-fixed="true"]::after,
+#main-header::before,
+#main-header::after {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+}
+
+/* Ensure header content is visible */
+html body header *, 
+header[data-fixed="true"] *,
+#main-header *,
+.header *,
+nav.fixed * {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Fix for header display on mobile */
+@media (max-width: 768px) {
+  html body header,
+  header[data-fixed="true"],
+  #main-header,
+  .header,
+  nav.fixed {
+    min-height: 50px !important;
+  }
+  
+  html body,
+  body.header-fixed,
+  body {
+    padding-top: 50px !important;
+  }
+}
+
+/* Fix for Safari and iOS */
+@supports (-webkit-touch-callout: none) {
+  html body header,
+  header[data-fixed="true"],
+  #main-header,
+  .header,
+  nav.fixed {
+    -webkit-transform: translateZ(0) !important;
+    transform: translateZ(0) !important;
+  }
+}
+
+/* Fix for Firefox */
+@-moz-document url-prefix() {
+  html body header,
+  header[data-fixed="true"],
+  #main-header,
+  .header,
+  nav.fixed {
+    position: fixed !important;
+  }
+}
+
+/* Fix for IE and Edge */
+@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+  html body header,
+  header[data-fixed="true"],
+  #main-header,
+  .header,
+  nav.fixed {
+    position: fixed !important;
+  }
+}
+
+/* Fix for Chrome */
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  html body header,
+  header[data-fixed="true"],
+  #main-header,
+  .header,
+  nav.fixed {
+    position: fixed !important;
+  }
+}
+
+/* Ensure the header is visible even when printing */
+@media print {
+  html body header,
+  header[data-fixed="true"],
+  #main-header,
+  .header,
+  nav.fixed {
+    position: fixed !important;
+    display: block !important;
+  }
+}

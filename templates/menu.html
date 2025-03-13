@@ -15,9 +15,13 @@
             {% endif %}
         </p>
         <p class="mt-2 text-yellow-500 text-lg">
-            {% for _ in range(restaurant.rating) %}
-                ⭐
-            {% endfor %}
+            {% if restaurant.rating %}
+                {% for _ in range(restaurant.rating|int) %}
+                    ⭐
+                {% endfor %}
+            {% else %}
+                No ratings yet
+            {% endif %}
         </p>
     </div>
 
@@ -35,8 +39,9 @@
                         <div class="flex-1">
                             <h4 class="text-lg font-bold">{{ menu_item.name }}</h4>
                             <p class="text-gray-600 text-sm">{{ menu_item.description or "Delicious meal, freshly prepared!" }}</p>
-                            <p class="font-semibold text-teal-600 mt-1">${{ "%.2f"|format(menu_item.price) }}</p>
-                            <button class="mt-3 px-5 py-2 bg-teal-600 text-white rounded-lg shadow-md hover:bg-teal-700 transition" onclick="addToCart({{ menu_item.id }})">
+                            <p class="font-semibold text-teal-600 mt-1">€{{ "%.2f"|format(menu_item.price) }}</p>
+                            <button class="add-to-cart-btn mt-3 px-5 py-2 bg-teal-600 text-white rounded-lg shadow-md hover:bg-teal-700 transition" 
+                                    data-item-id="{{ menu_item.id }}">
                                 Add to Cart
                             </button>
                         </div>
@@ -53,10 +58,363 @@
 </div>
 
 <script>
+    // Add event listeners to all "Add to Cart" buttons when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        const addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
+        addToCartButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const itemId = this.getAttribute('data-item-id');
+                addToCart(itemId);
+            });
+        });
+    });
+
     function addToCart(itemId) {
         fetch(`/cart/add/${itemId}`, { method: "POST" })
             .then(response => response.json())
-            .then(data => alert(data.message));
+            .then(data => {
+                // Update cart count
+                updateCartCount();
+                // Show cart panel
+                toggleCartPanel();
+            })
+            .catch(error => {
+                console.error('Error adding to cart:', error);
+                alert('Error adding item to cart. Please try again.');
+            });
+    }
+
+    // Function to toggle cart panel
+    function toggleCartPanel() {
+        console.log("Toggling cart panel");
+        const cartSidebar = document.getElementById('cart-sidebar');
+        const overlay = document.getElementById('overlay');
+        
+        if (!cartSidebar || !overlay) {
+            console.error("Cart sidebar or overlay not found");
+            return;
+        }
+        
+        if (cartSidebar.classList.contains('translate-x-full')) {
+            // Open cart
+            cartSidebar.classList.remove('translate-x-full');
+            overlay.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+            
+            // Load cart items
+            loadCartItems();
+        } else {
+            // Close cart
+            cartSidebar.classList.add('translate-x-full');
+            overlay.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+    }
+    
+    // Make toggleCartPanel available globally
+    window.toggleCartPanel = toggleCartPanel;
+
+    // Function to update cart count
+    async function updateCartCount() {
+        try {
+            const response = await fetch("/cart/count");
+            const data = await response.json();
+            const count = data.count;
+            const cartBubble = document.getElementById("cart-bubble");
+
+            if (cartBubble) {
+                if (count > 0) {
+                    cartBubble.textContent = count;
+                    cartBubble.classList.remove("hidden");
+                } else {
+                    cartBubble.classList.add("hidden");
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching cart count:", error);
+        }
+    }
+
+    // Function to load cart items
+    async function loadCartItems() {
+        const cartSidebar = document.getElementById('cart-sidebar');
+        if (!cartSidebar) return;
+        
+        try {
+            const response = await fetch('/cart', {
+                method: 'GET',
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                credentials: 'same-origin'
+            });
+            
+            if (response.status === 302 || response.redirected) {
+                // User is not logged in, redirect to login
+                window.location.href = '/login';
+                return;
+            }
+            
+            const data = await response.json();
+            
+            // Render cart items
+            renderCartItems(data);
+        } catch (error) {
+            console.error('Error loading cart items:', error);
+            cartSidebar.innerHTML = `
+                <div class="p-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold">Your Cart</h2>
+                        <button id="close-cart" class="text-gray-500 hover:text-gray-700">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <p class="text-red-500">Error loading cart items. Please try again.</p>
+                </div>
+            `;
+            
+            // Add event listener to close button
+            document.getElementById('close-cart').addEventListener('click', function() {
+                window.toggleCartPanel();
+            });
+        }
+    }
+
+    // Function to render cart items
+    function renderCartItems(data) {
+        const cartSidebar = document.getElementById('cart-sidebar');
+        if (!cartSidebar) return;
+        
+        const items = data.items || [];
+        const totalPrice = data.total_price || 0;
+        
+        if (items.length === 0) {
+            cartSidebar.innerHTML = `
+                <div class="p-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold">Your Cart</h2>
+                        <button id="close-cart" class="text-gray-500 hover:text-gray-700">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <p class="text-gray-500">Your cart is empty.</p>
+                </div>
+            `;
+            
+            // Add event listener to close button
+            document.getElementById('close-cart').addEventListener('click', function() {
+                window.toggleCartPanel();
+            });
+        } else {
+            let itemsHtml = '';
+            
+            items.forEach(item => {
+                itemsHtml += `
+                    <div class="flex justify-between items-center p-4 border-b">
+                        <div class="flex-1">
+                            <h3 class="font-medium text-lg">${item.name}</h3>
+                            <div class="flex items-center mt-2">
+                                <div class="flex items-center bg-gray-100 rounded-full">
+                                    <button class="decrease-quantity px-3 py-1 text-teal-600 font-bold rounded-l-full hover:bg-gray-200" data-id="${item.id}">-</button>
+                                    <span class="px-3 py-1">${item.quantity}</span>
+                                    <button class="increase-quantity px-3 py-1 text-teal-600 font-bold rounded-r-full hover:bg-gray-200" data-id="${item.id}">+</button>
+                                </div>
+                                <span class="ml-4">€${(item.price * item.quantity).toFixed(2)}</span>
+                                <button class="remove-item ml-auto text-red-500" data-id="${item.id}">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // Calculate fees
+            const originalFee = totalPrice; // 85% of total
+            const serviceFee = (originalFee * 15) / 85; // 15% service fee
+            const totalFee = originalFee + serviceFee;
+            
+            cartSidebar.innerHTML = `
+                <div class="flex flex-col h-full">
+                    <div class="flex justify-between items-center p-4 border-b">
+                        <h2 class="text-xl font-bold">Your Cart</h2>
+                        <button id="close-cart" class="text-gray-500 hover:text-gray-700">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="flex-1 overflow-y-auto">
+                        ${itemsHtml}
+                    </div>
+                    
+                    <div class="mt-auto p-4 border-t bg-white">
+                        <div class="space-y-2 mb-4">
+                            <div class="flex justify-between">
+                                <span>Original Fee (85%):</span>
+                                <span>€${originalFee.toFixed(2)}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Service Fee (15%):</span>
+                                <span>€${serviceFee.toFixed(2)}</span>
+                            </div>
+                            <div class="flex justify-between font-bold">
+                                <span>Total Fee:</span>
+                                <span>€${totalFee.toFixed(2)}</span>
+                            </div>
+                        </div>
+                        <button id="checkout-btn" class="w-full py-3 bg-teal-600 text-white font-bold rounded hover:bg-teal-700 transition">
+                            Proceed to Checkout
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Add event listeners
+            document.getElementById('close-cart').addEventListener('click', function() {
+                window.toggleCartPanel();
+            });
+            
+            document.getElementById('checkout-btn').addEventListener('click', function() {
+                window.location.href = '/checkout';
+            });
+            
+            // Add event listeners to quantity buttons and remove buttons
+            document.querySelectorAll('.decrease-quantity').forEach(button => {
+                button.addEventListener('click', function() {
+                    const itemId = this.getAttribute('data-id');
+                    updateCartItemQuantity(itemId, -1);
+                });
+            });
+            
+            document.querySelectorAll('.increase-quantity').forEach(button => {
+                button.addEventListener('click', function() {
+                    const itemId = this.getAttribute('data-id');
+                    updateCartItemQuantity(itemId, 1);
+                });
+            });
+            
+            document.querySelectorAll('.remove-item').forEach(button => {
+                button.addEventListener('click', function() {
+                    const itemId = this.getAttribute('data-id');
+                    removeCartItem(itemId);
+                });
+            });
+        }
+    }
+    
+    // Function to update cart item quantity
+    async function updateCartItemQuantity(itemId, change) {
+        try {
+            console.log(`Updating item ${itemId} with change ${change}`);
+            
+            // First get the current cart to know the current quantity
+            const response = await fetch('/cart');
+            const data = await response.json();
+            const items = data.items || [];
+            
+            // Find the item - convert itemId to string for comparison
+            const item = items.find(i => i.id === itemId);
+            if (!item) {
+                console.error(`Item ${itemId} not found in cart`);
+                return;
+            }
+            
+            if (change < 0) {
+                // If quantity is 1 and we're decreasing, just remove the item
+                if (item.quantity === 1) {
+                    removeCartItem(itemId);
+                    return;
+                }
+                
+                // Otherwise, remove the item completely
+                await fetch(`/cart/remove/${itemId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                // Then add it back with the new quantity
+                const newQuantity = item.quantity - 1;
+                console.log(`Setting quantity to ${newQuantity}`);
+                
+                // Add the item with the exact new quantity
+                await fetch(`/cart/add/${itemId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ quantity: newQuantity })
+                });
+            } else {
+                // For incrementing, we need to be more careful
+                // First remove the item
+                await fetch(`/cart/remove/${itemId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                // Then add it back with the new quantity
+                const newQuantity = item.quantity + 1;
+                console.log(`Setting quantity to ${newQuantity}`);
+                
+                // Add the item with the exact new quantity
+                await fetch(`/cart/add/${itemId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ quantity: newQuantity })
+                });
+            }
+            
+            // Reload cart
+            updateCartCount();
+            loadCartItems();
+        } catch (error) {
+            console.error('Error updating cart item quantity:', error);
+        }
+    }
+    
+    // Function to remove item from cart
+    async function removeCartItem(itemId, shouldReload = true) {
+        try {
+            const response = await fetch(`/cart/remove/${itemId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to remove item from cart');
+            }
+            
+            // Update cart count and reload cart items if needed
+            if (shouldReload) {
+                updateCartCount();
+                loadCartItems();
+            }
+            
+            return true; // Return success
+        } catch (error) {
+            console.error('Error removing item from cart:', error);
+            if (shouldReload) {
+                alert('Error removing item from cart. Please try again.');
+            }
+            return false; // Return failure
+        }
     }
 </script>
 

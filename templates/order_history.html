@@ -3,23 +3,38 @@
 {% block content %}
 <div class="max-w-6xl mx-auto mt-16 p-6 bg-white rounded-lg shadow-lg">
     <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Order History</h2>
+    
+    <!-- Display user balance -->
+    <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <p class="text-lg font-semibold text-blue-800">Current Balance: €{{ "%.2f"|format(user_balance) }}</p>
+    </div>
 
     {% if current_order %}
     <div class="mb-8">
         <h3 class="text-xl font-semibold mb-4">Current Order</h3>
         <div class="p-4 border rounded-lg shadow-md bg-gray-50">
-            <p><strong>Order ID:</strong> {{ current_order.id }}</p>
-            <p><strong>Total Price:</strong> ${{ current_order.total_price }}</p>
-            <p><strong>Status:</strong> {{ current_order.status }}</p>
-            <ul>
-                {% for item in current_order.items %}
-                <li>{{ item.item.name }} - Quantity: {{ item.quantity }}</li>
-                {% endfor %}
-            </ul>
+            <p class="font-bold">Order #{{ current_order.id }}</p>
+            <p><strong>Date:</strong> {{ current_order.order_date.strftime('%Y-%m-%d %H:%M') }}</p>
+            <p><strong>Total Price:</strong> €{{ "%.2f"|format(current_order.total_price) }}</p>
+            <p><strong>Status:</strong> <span class="{% if current_order.order_status == 'pending' %}text-yellow-600{% elif current_order.order_status == 'completed' %}text-green-600{% elif current_order.order_status == 'canceled' %}text-red-600{% else %}text-blue-600{% endif %}">{{ current_order.order_status }}</span></p>
+            
+            <!-- Order items with images -->
+            <div class="mt-4 border-t pt-3">
+                <p class="font-medium mb-2">Order Items:</p>
+                <div class="space-y-3">
+                    {% for item in current_order.order_items %}
+                    <div class="flex items-center">
+                        <img src="{{ item.item.image_url or '/static/images/default_food.png' }}" alt="{{ item.item.name }}" class="w-16 h-16 object-cover rounded-lg mr-3">
+                        <div>
+                            <p class="font-medium">{{ item.quantity }}x {{ item.item.name }}</p>
+                            <p class="text-gray-600 text-sm">€{{ "%.2f"|format(item.item.price) }} each</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
         </div>
     </div>
-    {% else %}
-    <p>No current orders found.</p>
     {% endif %}
 
     {% if cart_items %}
@@ -36,17 +51,66 @@
         <div class="grid grid-cols-1 gap-6">
             {% for order in previous_orders %}
             <div class="p-4 border rounded-lg shadow-md bg-gray-50">
-                <p><strong>Order ID:</strong> {{ order.id }}</p>
-                <p><strong>Total Price:</strong> ${{ order.total_price }}</p>
-                <p><strong>Status:</strong> {{ order.status }}</p>
+                <p class="font-bold">Order #{{ order.id }}</p>
+                <p><strong>Date:</strong> {{ order.order_date.strftime('%Y-%m-%d %H:%M') }}</p>
+                <p><strong>Total Price:</strong> €{{ "%.2f"|format(order.total_price) }}</p>
+                <p><strong>Status:</strong> <span class="{% if order.order_status == 'pending' %}text-yellow-600{% elif order.order_status == 'completed' %}text-green-600{% elif order.order_status == 'canceled' %}text-red-600{% else %}text-blue-600{% endif %}">{{ order.order_status }}</span></p>
+                
+                <!-- Cashback notification if applied -->
+                {% if order.cashback_applied %}
+                    <p class="mt-2 text-green-600 font-medium">✓ Cashback received on this order</p>
+                {% endif %}
+                
+                <!-- Rating UI for completed orders -->
+                {% if order.order_status == 'completed' %}
+                    {% if order.rating|length > 0 %}
+                        <div class="mt-2">
+                            <p class="text-gray-700 font-medium">Your Rating:</p>
+                            <div class="flex items-center">
+                                {% set rating_obj = order.rating[0] if order.rating|length > 0 else None %}
+                                <span class="text-lg font-semibold">{{ "%.1f"|format(rating_obj.rating) }}</span>
+                                <span class="text-lg text-yellow-500 mx-1">★</span>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="mt-4">
+                            <p class="text-gray-700 font-medium">Rate this order:</p>
+                            <div class="star-rating-container">
+                                <div class="star-rating-input" data-order-id="{{ order.id }}" data-restaurant-id="{{ order.restaurant.id }}">
+                                    <div class="stars">
+                                        {% for i in range(1, 6) %}
+                                            <span class="star" data-index="{{ i }}">★</span>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="rating-value">0.0</div>
+                                </div>
+                                <button class="submit-rating mt-2 px-3 py-1 bg-teal-600 text-white text-sm rounded hover:bg-teal-700 transition" data-order-id="{{ order.id }}">Submit Rating</button>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endif %}
+                
+                <!-- Order items with images -->
+                <div class="mt-4 border-t pt-3">
+                    <p class="font-medium mb-2">Order Items:</p>
+                    <div class="space-y-3">
+                        {% for item in order.order_items %}
+                        <div class="flex items-center">
+                            <img src="{{ item.item.image_url or '/static/images/default_food.png' }}" alt="{{ item.item.name }}" class="w-16 h-16 object-cover rounded-lg mr-3">
+                            <div>
+                                <p class="font-medium">{{ item.quantity }}x {{ item.item.name }}</p>
+                                <p class="text-gray-600 text-sm">€{{ "%.2f"|format(item.item.price) }} each</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
             {% endfor %}
         </div>
     {% else %}
         <p class="text-gray-600 text-center">No previous orders found.</p>
     {% endif %}
-
-    <button onclick="submitOrder()">Submit Order</button>
 </div>
 
 <script>
@@ -77,45 +141,226 @@ function displayCartData(items) {
         return;
     }
 
-    let originalFee = 0;
+    let totalPrice = 0;
     items.forEach(item => {
-        originalFee += item.price * item.quantity;
+        totalPrice += item.price * item.quantity;
         const itemElement = document.createElement("div");
         itemElement.innerHTML = `
-            <p>${item.name} - $${item.price.toFixed(2)} × ${item.quantity}</p>
+            <p>${item.name} - €${item.price.toFixed(2)} × ${item.quantity}</p>
         `;
         cartContainer.appendChild(itemElement);
     });
 
-    let serviceFee = originalFee * 0.15;
-    let totalFee = originalFee + serviceFee;
-
     const feeElement = document.createElement("div");
     feeElement.innerHTML = `
-        <p>Original Fee (85%): $${(originalFee * 0.85).toFixed(2)}</p>
-        <p>Service Fee (15%): $${serviceFee.toFixed(2)}</p>
-        <p><strong>Total Fee:</strong> $${totalFee.toFixed(2)}</p>
+        <p class="mt-2"><strong>Total Price:</strong> €${totalPrice.toFixed(2)}</p>
     `;
     cartContainer.appendChild(feeElement);
 }
 
 document.addEventListener("DOMContentLoaded", fetchCartData);
-
-function submitOrder() {
-    fetch('/submit_order', { method: 'POST' })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Order submitted successfully!');
-            } else {
-                alert('Failed to submit order.');
-            }
-        })
-        .catch(error => console.error('Error:', error));
-}
 </script>
 
-{% if current_order %}
-{{ print("Current Order:", current_order) }}
-{% endif %}
+<style>
+/* Star Rating Component Styles */
+.star-rating-container {
+    margin-top: 0.5rem;
+}
+
+.star-rating-input {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.stars {
+    display: flex;
+    position: relative;
+    font-size: 28px;
+    cursor: pointer;
+}
+
+.star {
+    color: #d1d5db;
+    position: relative;
+    transition: color 0.2s;
+    margin-right: 2px;
+}
+
+.star.selected {
+    color: #fbbf24;
+}
+
+.star.half-selected {
+    position: relative;
+}
+
+.star.half-selected:after {
+    content: '★';
+    color: #fbbf24;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 50%;
+    overflow: hidden;
+}
+
+.star.hover {
+    color: #fcd34d;
+}
+
+.rating-value {
+    margin-top: 0.25rem;
+    font-size: 16px;
+    color: #4b5563;
+    font-weight: bold;
+}
+
+/* For displaying readonly ratings */
+.star-rating {
+    display: flex;
+    align-items: center;
+}
+
+.star-display {
+    position: relative;
+    display: inline-block;
+    font-size: 24px;
+    color: #d1d5db;
+}
+
+.star-display::before {
+    content: "★★★★★";
+}
+
+.star-display::after {
+    content: "★★★★★";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: var(--rating-percent);
+    color: #fbbf24;
+    overflow: hidden;
+}
+</style>
+
+<script>
+// Star Rating Component
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the star rating display for existing ratings
+    document.querySelectorAll('.star-rating').forEach(function(ratingEl) {
+        const rating = parseFloat(ratingEl.getAttribute('data-rating'));
+        const displayEl = ratingEl.querySelector('.star-display');
+        const percentage = (rating / 5) * 100;
+        displayEl.style.setProperty('--rating-percent', percentage + '%');
+    });
+
+    // Initialize the star rating input components
+    document.querySelectorAll('.star-rating-input').forEach(function(container) {
+        const stars = container.querySelectorAll('.star');
+        const ratingValue = container.querySelector('.rating-value');
+        let selectedRating = 0;
+
+        // Handle star hover and click events
+        stars.forEach(function(star) {
+            const starIndex = parseInt(star.getAttribute('data-index'));
+            
+            // Calculate the x position within the star
+            star.addEventListener('mousemove', function(e) {
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const isHalf = x < rect.width / 2;
+                const value = isHalf ? starIndex - 0.5 : starIndex;
+                
+                // Update all stars based on the value
+                updateStars(stars, value);
+                ratingValue.textContent = value.toFixed(1);
+            });
+            
+            // Handle mouseout
+            star.addEventListener('mouseout', function() {
+                updateStars(stars, selectedRating);
+                ratingValue.textContent = selectedRating.toFixed(1);
+            });
+            
+            // Handle click to set the rating
+            star.addEventListener('click', function(e) {
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const isHalf = x < rect.width / 2;
+                selectedRating = isHalf ? starIndex - 0.5 : starIndex;
+                
+                updateStars(stars, selectedRating);
+                ratingValue.textContent = selectedRating.toFixed(1);
+            });
+        });
+        
+        // Helper function to update star appearance
+        function updateStars(stars, value) {
+            stars.forEach(function(s, i) {
+                const sIndex = i + 1;
+                s.classList.remove('selected', 'half-selected');
+                
+                if (sIndex < value) {
+                    // Full stars before the current value
+                    s.classList.add('selected');
+                } else if (sIndex === Math.ceil(value) && value % 1 !== 0) {
+                    // Half star at the current value
+                    s.classList.add('half-selected');
+                } else if (sIndex <= value) {
+                    // Full stars up to the current value
+                    s.classList.add('selected');
+                }
+            });
+        }
+    });
+
+    // Handle rating submission
+    document.querySelectorAll('.submit-rating').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const orderId = this.getAttribute('data-order-id');
+            const ratingContainer = document.querySelector(`.star-rating-input[data-order-id="${orderId}"]`);
+            const restaurantId = ratingContainer.getAttribute('data-restaurant-id');
+            const ratingValue = parseFloat(ratingContainer.querySelector('.rating-value').textContent);
+            
+            if (ratingValue <= 0) {
+                alert('Please select a rating');
+                return;
+            }
+            
+            submitRating(orderId, restaurantId, ratingValue);
+        });
+    });
+});
+
+// Function to submit rating to the server
+async function submitRating(orderId, restaurantId, rating) {
+    try {
+        const response = await fetch('/submit-rating', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                order_id: orderId,
+                restaurant_id: restaurantId,
+                rating: rating
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('Thank you for your rating!');
+            // Reload the page to show the updated rating
+            window.location.reload();
+        } else {
+            alert('Error submitting rating: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Error submitting rating:', error);
+        alert('An error occurred while submitting your rating. Please try again.');
+    }
+}
+</script>
 {% endblock %} 

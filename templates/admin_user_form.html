@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if user %}Edit User{% else %}Add New User{% endif %} | Admin Panel
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+        <div class="p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-bold text-gray-800">
+                    {% if user %}Edit User: {{ user.first_name }} {{ user.last_name }}{% else %}Add New User{% endif %}
+                </h1>
+                <a href="{{ url_for('admin_dashboard') }}" class="text-teal-600 hover:text-teal-800">
+                    <i class="fas fa-arrow-left mr-1"></i> Back to Dashboard
+                </a>
+            </div>
+
+            <form method="POST" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- First Name -->
+                    <div>
+                        <label for="first_name" class="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
+                        <input type="text" name="first_name" id="first_name" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500" 
+                            value="{{ user.first_name if user else '' }}" required>
+                    </div>
+                    
+                    <!-- Last Name -->
+                    <div>
+                        <label for="last_name" class="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
+                        <input type="text" name="last_name" id="last_name" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500" 
+                            value="{{ user.last_name if user else '' }}" required>
+                    </div>
+                    
+                    <!-- Email -->
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                        <input type="email" name="email" id="email" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500" 
+                            value="{{ user.email if user else '' }}" required>
+                    </div>
+                    
+                    <!-- Password -->
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+                            {% if user %}New Password (leave blank to keep current){% else %}Password *{% endif %}
+                        </label>
+                        <input type="password" name="password" id="password" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500" 
+                            {% if not user %}required{% endif %}>
+                    </div>
+                    
+                    <!-- User Type -->
+                    <div>
+                        <label for="user_type" class="block text-sm font-medium text-gray-700 mb-1">User Type *</label>
+                        <select name="user_type" id="user_type" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500" required>
+                            <option value="customer" {% if user and user.user_type == 'customer' %}selected{% endif %}>Customer</option>
+                            <option value="restaurant" {% if user and user.user_type == 'restaurant' %}selected{% endif %}>Restaurant</option>
+                            <option value="admin" {% if user and user.user_type == 'admin' %}selected{% endif %}>Admin</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Balance -->
+                    <div>
+                        <label for="balance" class="block text-sm font-medium text-gray-700 mb-1">Balance (€)</label>
+                        <input type="number" name="balance" id="balance" step="0.01" min="0" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500" 
+                            value="{{ user.balance if user else '0.00' }}">
+                    </div>
+                    
+                    <!-- Location -->
+                    <div>
+                        <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                        <input type="text" name="location" id="location" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500" 
+                            value="{{ user.location if user else '' }}">
+                    </div>
+                    
+                    <!-- PLZ (Postal Code) -->
+                    <div>
+                        <label for="plz" class="block text-sm font-medium text-gray-700 mb-1">Postal Code</label>
+                        <input type="text" name="plz" id="plz" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500" 
+                            value="{{ user.plz if user else '' }}">
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-4 pt-4">
+                    <a href="{{ url_for('admin_dashboard') }}" 
+                        class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                        Cancel
+                    </a>
+                    <button type="submit" 
+                        class="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 shadow-md">
+                        {% if user %}Update User{% else %}Add User{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

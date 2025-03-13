@@ -1,0 +1,253 @@
+/**
+ * Lieferspatz - Optimized CSS
+ * Performance-focused styles with browser rendering optimizations
+ */
+
+/* Core layout performance fixes */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+  will-change: auto;
+  font-display: swap;
+  padding-top: 60px !important; /* Ensure content doesn't get hidden behind fixed header */
+}
+
+/* Header optimizations */
+header {
+  /* Transform hardware acceleration for smooth scrolling */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  /* Reserve space for header to prevent layout shifts */
+  height: auto;
+  min-height: 60px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000; /* Increased z-index to ensure header stays on top */
+  /* Force the proper background gradient */
+  background: linear-gradient(to right, #0d9488, #0f766e) !important;
+  background-image: none !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+  /* Ensure consistent display */
+  display: block !important;
+  width: 100% !important;
+  contain: layout style; /* Optimize layout performance */
+}
+
+/* Fix for missing/delayed header styles */
+header * {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Prevent content jumping when scrollbar appears/disappears */
+html {
+  scrollbar-gutter: stable;
+}
+
+/* Restaurant cards optimizations */
+.restaurant-card {
+  display: block;
+  transition: transform 0.2s, box-shadow 0.2s;
+  will-change: transform;
+  contain: layout;
+}
+
+.restaurant-card:hover {
+  transform: translateY(-4px);
+}
+
+.restaurant-photo-container {
+  height: 160px;
+  overflow: hidden;
+  background-color: #e5e7eb;
+}
+
+.restaurant-photo {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  object-position: center;
+  /* Add image dimensions to help browser reserve space */
+  aspect-ratio: 16/9;
+}
+
+/* Add loading state for images */
+.restaurant-photo-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #e5e7eb;
+  z-index: -1;
+}
+
+/* Restaurant closed overlay */
+.restaurant-closed-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(243, 244, 246, 0.8);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closed-indicator {
+  background-color: rgba(239, 68, 68, 0.9);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+/* Cart optimizations */
+#cart-sidebar {
+  contain: content;
+  overscroll-behavior: contain;
+}
+
+#cart-items {
+  overscroll-behavior: contain;
+  overflow-y: auto;
+  /* Use passive scroll listeners for better performance */
+  touch-action: pan-y;
+}
+
+/* Fix for mobile viewport issues */
+@media (max-width: 640px) {
+  #cart-sidebar {
+    width: 85vw;
+    max-width: 330px;
+  }
+  
+  .order-card {
+    padding: 0.75rem;
+  }
+}
+
+/* Location search optimization */
+#location-suggestions {
+  max-height: 280px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  z-index: 40;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border-radius: 0 0 0.375rem 0.375rem;
+}
+
+/* Optimize animation performance */
+.animate-spin, .animate-pulse {
+  will-change: transform, opacity;
+}
+
+/* Form input optimizations */
+input, textarea, select {
+  will-change: auto;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* Loading indicators */
+.loading-indicator {
+  display: inline-block;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid rgba(13, 148, 136, 0.3);
+  border-radius: 50%;
+  border-top-color: #0d9488;
+  animation: spin 1s linear infinite;
+  will-change: transform;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Optimized for CLS (Content Layout Shift) */
+main {
+  min-height: calc(100vh - 140px);
+  contain: layout;
+}
+
+img {
+  content-visibility: auto;
+}
+
+/* Notification animation optimizations */
+.notification {
+  z-index: 9999;
+  position: fixed;
+  right: 1rem;
+  top: 4rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.375rem;
+  background-color: #0d9488;
+  color: white;
+  transform: translateY(-20px);
+  opacity: 0;
+  will-change: transform, opacity;
+  transition: transform 0.3s, opacity 0.3s;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  max-width: 300px;
+}
+
+.notification.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.notification.success {
+  background-color: #0d9488;
+}
+
+.notification.error {
+  background-color: #ef4444;
+}
+
+/* Reduce motion for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Print optimizations */
+@media print {
+  header, footer, #cart-sidebar, .cart-overlay, #nav-sidebar, .nav-overlay, button {
+    display: none !important;
+  }
+  
+  body {
+    padding-top: 0 !important;
+  }
+  
+  a {
+    text-decoration: none !important;
+    color: #000 !important;
+  }
+  
+  main {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+} 

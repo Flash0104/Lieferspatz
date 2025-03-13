@@ -7,36 +7,94 @@
     <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="/static/css/tailwind.css">
     <title>Checkout - Lieferspatz</title>
+    <style>
+        body {
+            background-color: #f3f4f6;
+        }
+        
+        .item-card {
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .item-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .remove-btn:hover {
+            background-color: #fecaca;
+        }
+    </style>
 </head>
 
-<body class="bg-gray-200 font-sans flex flex-col min-h-screen">
+<body class="font-sans flex flex-col min-h-screen">
     
     <!-- 🔹 Header -->
     {% include 'header.html' %}
 
-    <div class="container mx-auto p-6 mt-20">
-        <h1 class="text-2xl font-bold mb-4">Checkout</h1>
+    <div class="container mx-auto p-6 mt-20 mb-24">
+        <h1 class="text-2xl font-bold mb-8 text-center">Checkout</h1>
 
-        <div class="bg-white shadow-md rounded p-6">
-            <h2 class="text-lg font-semibold">Order Summary</h2>
+        <!-- Main content area -->
+        <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4">Delivery Details</h2>
             <div class="border-b mb-4"></div>
-
-            {% for item_id, item in cart.items() %}
-            <div class="flex items-center mb-4">
-                <img src="{{ item.image_url }}" alt="{{ item.name }}" class="w-16 h-16 rounded-lg">
-                <div class="ml-4">
-                    <h3 class="font-semibold">{{ item.name }}</h3>
-                    <p>€{{ item.price }} x {{ item.quantity }}</p>
-                </div>
+            
+            <!-- Delivery address information would go here -->
+            <div class="mb-4">
+                <p class="text-gray-700">Your order will be delivered to:</p>
+                <p class="font-semibold mt-2">{{ current_user.location }}</p>
+                <p>{{ current_user.plz }}</p>
             </div>
-            {% endfor %}
-
-            <div class="mt-6">
-                <p class="text-xl font-bold">Total: €{{ total_price }}</p>
+        </div>
+        
+        <!-- Cart Items Grid -->
+        <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-bold mb-6">Your Order</h2>
+            
+            {% if cart %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                {% for item_id, item in cart.items() %}
+                <div class="p-4 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition flex flex-col justify-between h-full">
+                    <div>
+                        <h3 class="text-lg font-semibold">{{ item.name }}</h3>
+                        <p class="text-sm text-gray-600 mt-2">Quantity: {{ item.quantity }}</p>
+                    </div>
+                    <div class="mt-4 flex justify-between items-center">
+                        <p class="text-green-600 font-bold">€{{ item.price }}</p>
+                        <a href="{{ url_for('remove_from_cart', item_id=item_id) }}" 
+                           class="bg-red-100 text-red-600 hover:bg-red-200 transition px-3 py-1 rounded-full text-sm font-medium">
+                            Remove
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Fee calculations -->
+            <div class="border-t pt-6">
+                <div class="flex justify-between mb-2">
+                    <span>Original Fee:</span>
+                    <span>€{{ "%.2f"|format(total_price) }}</span>
+                </div>
+                <div class="flex justify-between mb-2">
+                    <span>Service Fee (15%):</span>
+                    <span>€{{ "%.2f"|format(service_fee) }}</span>
+                </div>
+                <div class="flex justify-between font-bold mb-6 text-lg">
+                    <span>Total Fee:</span>
+                    <span>€{{ "%.2f"|format(total_fee) }}</span>
+                </div>
+                
+                <!-- Checkout button -->
                 <form action="{{ url_for('checkout') }}" method="post">
-                    <button class="bg-blue-600 text-white px-6 py-2 rounded-lg mt-3">Place Order</button>
+                    <button class="w-full bg-teal-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-teal-700 transition">
+                        Complete Order
+                    </button>
                 </form>
             </div>
+            {% else %}
+            <p class="text-center text-gray-500 py-8">Your cart is empty.</p>
+            {% endif %}
         </div>
     </div>
 

@@ -16,10 +16,12 @@
                 <p><strong>Address:</strong> {{ order.address }}</p>
                 <p><strong>PLZ:</strong> {{ order.plz }}</p>
                 <p><strong>Ordered at:</strong> {{ order.ordered_at }}</p>
+                <p><strong>Status:</strong> {{ order.order_status }}</p>
 
                 <!-- Buttons + Timer Section -->
                 <div class="flex justify-between items-center mt-4">
                     <div class="flex gap-3">
+                        {% if order.order_status == 'pending' %}
                         <form action="{{ url_for('accept_order', order_id=order.id) }}" method="POST">
                             <button type="submit" 
                                 class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
@@ -32,10 +34,31 @@
                                 Cancel
                             </button>
                         </form>
+                        {% endif %}
+                        
+                        {% if order.order_status == 'accepted' %}
+                        <p class="bg-yellow-100 text-yellow-800 px-3 py-2 rounded-lg mr-2">Status: Preparing</p>
+                        <form action="{{ url_for('mark_order_prepared', order_id=order.id) }}" method="POST">
+                            <button type="submit" 
+                                class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition">
+                                Prepared
+                            </button>
+                        </form>
+                        {% endif %}
+                        
+                        {% if order.order_status == 'prepared' %}
+                        <p class="bg-blue-100 text-blue-800 px-3 py-2 rounded-lg mr-2">Status: Ready for Delivery</p>
+                        <form action="{{ url_for('mark_order_delivered', order_id=order.id) }}" method="POST">
+                            <button type="submit" 
+                                class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
+                                Delivered
+                            </button>
+                        </form>
+                        {% endif %}
                     </div>
 
                     <!-- Timer -->
-                    {% if order.status == "pending" %}
+                    {% if order.order_status == "pending" %}
                     <div class="bg-gray-200 text-gray-800 px-3 py-2 rounded-lg text-sm font-semibold">
                         ⏳ Time left: {{ order.time_left }} min
                     </div>

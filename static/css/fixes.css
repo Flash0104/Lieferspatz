@@ -1,0 +1,1244 @@
+/**
+ * Navigation and Layout Fixes
+ * 
+ * This file contains fixes for the navbar, cart, and layout issues
+ */
+
+/* Core fixes for the Lieferspatz platform */
+
+/* ===== ULTRA-SPECIFIC HEADER FIX ===== */
+body header,
+html header,
+body > header,
+html > header,
+body div > header,
+header.fixed,
+header#main-header,
+.header-wrapper header,
+header[role="banner"],
+div > header {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  z-index: 9999 !important; /* Super high z-index to ensure visibility */
+  height: auto !important;
+  min-height: 60px !important;
+  background: linear-gradient(to right, #0d9488, #0f766e) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  transform: translateZ(0) !important;
+  -webkit-transform: translateZ(0) !important;
+  will-change: transform !important;
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+body {
+  padding-top: 60px !important; /* Ensure content doesn't get hidden behind fixed header */
+  margin-top: 0 !important;
+}
+
+/* Existing header styles */
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: linear-gradient(to right, #0d9488, #0f766e);
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 0.5rem 0;
+}
+
+/* Header and navigation fixes */
+header {
+  background: linear-gradient(to right, #0d9488, #0f766e) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+  padding: 0.5rem 0 !important;
+  position: fixed !important;
+  top: 0 !important;
+  width: 100% !important;
+  z-index: 50 !important;
+  height: auto !important;
+  min-height: 60px !important;
+}
+
+/* Override to ensure proper header styling */
+header.fixed {
+  background: linear-gradient(to right, #0d9488, #0f766e) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Header container positioning */
+header .container {
+  padding: 0.5rem 1rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  height: auto !important;
+  min-height: 48px !important;
+  width: 100% !important;
+  max-width: 1280px !important;
+  margin: 0 auto !important;
+}
+
+/* Search input field */
+#location-input {
+  max-width: 180px !important;
+  transition: all 0.3s ease !important;
+  color: #1F2937 !important;
+  font-size: 0.875rem !important;
+}
+
+/* Cart button styling */
+#cart-btn {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0.5rem !important;
+  border-radius: 50% !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  transition: all 0.2s ease !important;
+}
+
+#cart-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+#cart-bubble {
+  position: absolute !important;
+  top: -5px !important;
+  right: -5px !important;
+  background-color: #ef4444 !important;
+  color: white !important;
+  border-radius: 9999px !important;
+  padding: 0.125rem 0.375rem !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+}
+
+/* Sidebar toggle button */
+#sidebar-toggle {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 0.375rem !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  transition: all 0.2s ease !important;
+  margin-right: 0.75rem !important;
+  outline: none !important;
+}
+
+#sidebar-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  transform: scale(1.05) !important;
+}
+
+/* Enhanced Sidebar navigation */
+#nav-sidebar {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 230px !important;
+  height: 100vh !important;
+  background: linear-gradient(to bottom, #0f766e, #065f46) !important;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3) !important;
+  transform: translateX(-100%) !important;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  z-index: 1000 !important;
+  overflow-y: auto !important;
+  padding: 0 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Ensure the sidebar shows when active */
+body.nav-open #nav-sidebar {
+  transform: translateX(0) !important;
+}
+
+/* Sidebar header with logo */
+#nav-sidebar .p-4 {
+  background-color: rgba(0, 0, 0, 0.1) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 1.5rem !important;
+}
+
+#nav-sidebar h2 {
+  color: white !important;
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Close sidebar button styling */
+#close-sidebar {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 50% !important;
+  width: 36px !important;
+  height: 36px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+}
+
+#close-sidebar:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  transform: rotate(90deg) !important;
+}
+
+#close-sidebar svg {
+  stroke-width: 2px !important;
+}
+
+/* Navigation links styling */
+#nav-sidebar nav {
+  padding: 1rem !important;
+}
+
+#nav-sidebar nav a {
+  color: white !important;
+  font-weight: 500 !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 0.5rem !important;
+  transition: background-color 0.2s ease !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  margin-bottom: 0.5rem !important;
+  position: relative !important;
+  overflow: hidden !important;
+  font-size: 0.9375rem !important;
+}
+
+#nav-sidebar nav a:before {
+  content: "" !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  height: 100% !important;
+  width: 4px !important;
+  background-color: white !important;
+  transform: scaleY(0) !important;
+  transition: transform 0.2s ease !important;
+}
+
+#nav-sidebar nav a:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  transform: translateX(5px) !important;
+}
+
+#nav-sidebar nav a:hover:before {
+  transform: scaleY(1) !important;
+}
+
+#nav-sidebar nav a:active {
+  transform: translateX(5px) scale(0.98) !important;
+}
+
+/* Sidebar sections */
+#nav-sidebar .section-title {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-size: 0.75rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  margin: 1.5rem 0 0.5rem 1.5rem !important;
+}
+
+/* Overlay styling with improved transition */
+#nav-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transition: opacity 0.3s ease, visibility 0.3s ease !important;
+  z-index: 999 !important;
+  backdrop-filter: blur(2px) !important;
+}
+
+#nav-overlay.active {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Fix for cart sidebar positioning and z-index */
+#cart-sidebar {
+  z-index: 1000 !important;
+}
+
+#cart-overlay {
+  z-index: 999 !important;
+}
+
+/* Reset any transform that might be applied */
+header, main, footer {
+  transition: transform 0.3s ease !important;
+}
+
+/* Ensure transition works properly */
+.nav-open #nav-sidebar {
+  transform: translateX(0) !important;
+}
+
+/* Add specific styles to reset any problematic transforms */
+body #nav-sidebar {
+  will-change: transform !important;
+}
+
+/* Welcome message styling */
+.welcome-message {
+  color: white !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  white-space: nowrap !important;
+  margin: 0 0.5rem !important;
+  padding: 0.375rem 0.75rem !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 0.375rem !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Button styling in header */
+header button,
+header a {
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  color: white !important;
+  padding: 0.375rem 0.75rem !important;
+  border-radius: 0.375rem !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  transition: all 0.2s ease !important;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+/* Logo sizing */
+header img[src$="favicon.png"] {
+  width: 2rem !important;
+  height: 2rem !important;
+  object-fit: contain !important;
+}
+
+/* Fix focus states */
+header a:focus,
+header button:focus,
+#nav-sidebar a:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Footer styles */
+footer.bg-gray-800 {
+  margin-top: auto !important;
+  padding: 2rem 1rem !important;
+}
+
+footer .container {
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+}
+
+footer .flex-col {
+  gap: 1.5rem !important;
+}
+
+footer img.w-12 {
+  width: 48px !important;
+  height: auto !important;
+  filter: brightness(1.2) !important;
+}
+
+footer .text-gray-300 {
+  margin-top: 1rem !important;
+  font-size: 0.875rem !important;
+}
+
+footer input[type="email"] {
+  border-color: #4b5563 !important;
+}
+
+footer button.bg-teal-500 {
+  transition: all 0.2s ease !important;
+}
+
+footer button.bg-teal-500:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  header .container {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    gap: 0.5rem !important;
+  }
+  
+  #location-input {
+    max-width: 140px !important;
+  }
+  
+  header .flex.items-center.space-x-4 {
+    gap: 0.5rem !important;
+  }
+  
+  .welcome-message {
+    font-size: 0.75rem !important;
+    padding: 0.25rem 0.5rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 100px !important;
+  }
+  
+  /* Mobile sidebar adjustments */
+  #nav-sidebar {
+    width: 280px !important;
+  }
+  
+  #nav-sidebar nav a {
+    padding: 0.75rem 1rem !important;
+  }
+  
+  /* Footer mobile styles */
+  footer .flex.items-center.space-x-4 {
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+    gap: 0.75rem !important;
+  }
+  
+  footer img.w-12 {
+    width: 40px !important;
+  }
+  
+  footer .flex.items-center.space-x-3 {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+  
+  footer input[type="email"] {
+    width: 100% !important;
+    max-width: 300px !important;
+    margin-bottom: 0.75rem !important;
+  }
+  
+  footer button.bg-teal-500 {
+    width: 100% !important;
+    max-width: 300px !important;
+  }
+}
+
+/* Special fix for balance display on small screens */
+@media (max-width: 640px) {
+  header .space-x-4 > * {
+    margin-left: 0.25rem !important;
+    margin-right: 0.25rem !important;
+  }
+  
+  .bg-teal-800.px-3.py-1.rounded-lg {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    font-size: 0.75rem !important;
+  }
+  
+  header button:not(#sidebar-toggle),
+  header a:not(.logo) {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.75rem !important;
+  }
+  
+  #sidebar-toggle {
+    margin-right: 0.5rem !important;
+  }
+  
+  /* Mobile sidebar further adjustments */
+  #nav-sidebar {
+    width: 240px !important;
+  }
+  
+  #nav-sidebar h2 {
+    font-size: 1.25rem !important;
+  }
+  
+  #close-sidebar {
+    width: 32px !important;
+    height: 32px !important;
+  }
+  
+  /* Small screen footer adjustments */
+  footer img.w-12 {
+    width: 36px !important;
+  }
+} 
+
+/* Custom scrollbar for sidebar */
+#nav-sidebar::-webkit-scrollbar {
+  width: 6px !important;
+}
+
+#nav-sidebar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+#nav-sidebar::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border-radius: 3px !important;
+}
+
+#nav-sidebar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Ensure footer is always visible */
+footer {
+  position: relative !important;
+  z-index: 40 !important;
+  margin-top: 2rem !important;
+  bottom: 0 !important;
+  display: block !important;
+  width: 100% !important;
+}
+
+/* Fix main content to not push footer off-screen */
+main {
+  padding-bottom: 4rem !important;
+}
+
+/* Left navigation bar adjustments */
+#nav-sidebar {
+  transform: translateX(-100%) !important;
+  z-index: 1000 !important;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+body.nav-open #nav-sidebar {
+  transform: translateX(0) !important;
+}
+
+/* User info section in sidebar */
+#nav-sidebar .user-info {
+  background-color: rgba(0, 0, 0, 0.2) !important;
+  border-radius: 0.5rem !important;
+  margin: 0.5rem 1rem !important;
+  padding: 0.75rem !important;
+}
+
+#nav-sidebar .user-info p {
+  font-size: 0.875rem !important;
+  margin-bottom: 0.25rem !important;
+}
+
+/* Cart sidebar fixes */
+#cart-sidebar {
+  position: fixed !important;
+  top: 0 !important;
+  right: 0 !important;
+  height: 100vh !important;
+  width: 350px !important;
+  background: white !important;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15) !important;
+  transform: translateX(100%) !important;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  z-index: 1000 !important;
+  display: block !important;
+  visibility: visible !important;
+}
+
+#cart-sidebar.active {
+  transform: translateX(0) !important;
+}
+
+/* Make cart overlay visible when active */
+#cart-overlay {
+  display: block !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transition: opacity 0.3s ease, visibility 0.3s ease !important;
+}
+
+#cart-overlay.active {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Make sure body doesn't scroll when sidebars are open */
+body.nav-open, 
+body.cart-open {
+  overflow: hidden !important;
+}
+
+/* Adjust restaurants grid to not overlap with footer */
+#restaurant-list {
+  margin-bottom: 3rem !important;
+}
+
+/* Ensure proper spacing for all pages */
+.container {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+@media (max-width: 768px) {
+  /* Responsive footer fixes */
+  footer.bg-gray-800 {
+    padding: 1.5rem 1rem !important;
+  }
+  
+  /* Smaller cards on mobile */
+  #restaurant-list .card {
+    margin-bottom: 0.75rem !important;
+  }
+} 
+
+/* Critical Fixes for Layout Issues - Footer, Sidebars and Cart */
+
+/* Page Layout Structure Fix */
+html, body {
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden !important;
+}
+
+body {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 100vh !important;
+}
+
+/* Main Content Area - Create space for footer */
+main {
+  flex: 1 0 auto !important;
+  margin-bottom: 6rem !important; /* Increased space for footer */
+  padding-bottom: 2rem !important;
+  width: 100% !important;
+}
+
+/* Footer Visibility Fix */
+footer {
+  flex-shrink: 0 !important;
+  position: relative !important; 
+  z-index: 20 !important;
+  width: 100% !important;
+  background-color: #1f2937 !important; /* Dark gray background */
+  color: #f3f4f6 !important;
+  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+  margin-top: auto !important;
+  padding: 2rem 1rem !important;
+  clear: both !important;
+}
+
+/* Left Navigation Bar Fix */
+#nav-sidebar {
+  z-index: 1001 !important; /* Ensure higher than other elements */
+  background: linear-gradient(to bottom, #0f766e, #065f46) !important;
+  will-change: transform !important;
+}
+
+body.nav-open #nav-sidebar {
+  transform: translateX(0) !important;
+  visibility: visible !important;
+}
+
+body.nav-open {
+  overflow: hidden !important; /* Prevent body scrolling when nav is open */
+}
+
+/* Fix overlay display for nav sidebar */
+#nav-overlay {
+  display: block !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  transition: opacity 0.3s ease, visibility 0.3s ease !important;
+}
+
+#nav-overlay.active {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Cart Sidebar Fix */
+#cart-sidebar {
+  position: fixed !important;
+  top: 0 !important;
+  right: 0 !important;
+  width: 350px !important; 
+  max-width: 90vw !important;
+  height: 100vh !important;
+  background-color: white !important;
+  z-index: 1001 !important;
+  overflow-y: auto !important;
+  transform: translateX(100%) !important;
+  transition: transform 0.3s ease-in-out !important;
+  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2) !important;
+  visibility: visible !important;
+}
+
+#cart-sidebar.active {
+  transform: translateX(0) !important;
+}
+
+/* Cart overlay fix */
+#cart-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important; 
+  width: 100vw !important;
+  height: 100vh !important;
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  z-index: 1000 !important;
+  transition: opacity 0.3s ease, visibility 0.3s ease !important;
+  display: block !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+#cart-overlay.active {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Fix for cart sidebar internal content */
+#cart-sidebar .sidebar-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 1rem !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+#cart-items {
+  padding: 1rem !important;
+  max-height: calc(100vh - 200px) !important;
+  overflow-y: auto !important;
+}
+
+/* Fix for cart close button */
+#close-cart {
+  cursor: pointer !important;
+  padding: 0.5rem !important;
+  border-radius: 50% !important;
+  transition: background-color 0.2s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#close-cart:hover {
+  background-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Ensure body-fixed state persists when cart is open */
+body.cart-open {
+  overflow: hidden !important;
+}
+
+/* Fix for restaurant card layout */
+.restaurant-container {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+  gap: 1.5rem !important;
+  padding: 1rem !important;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 640px) {
+  #nav-sidebar {
+    width: 240px !important;
+  }
+  
+  #cart-sidebar {
+    width: 300px !important;
+  }
+  
+  .restaurant-container {
+    grid-template-columns: 1fr !important;
+  }
+  
+  main {
+    margin-bottom: 5rem !important;
+  }
+} 
+
+/* Footer Fixes */
+footer {
+  background-color: #1f2937 !important; /* Dark gray background */
+  color: #f3f4f6 !important;
+  padding: 2rem 1rem !important;
+  margin-top: 2rem !important;
+  width: 100% !important;
+  position: relative !important;
+  z-index: 20 !important;
+}
+
+footer .container {
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+}
+
+footer a {
+  color: #9ca3af !important;
+  transition: color 0.2s ease !important;
+}
+
+footer a:hover {
+  color: #f3f4f6 !important;
+}
+
+footer input[type="email"] {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+}
+
+footer button.bg-teal-500,
+footer button.bg-teal-600 {
+  background-color: #14b8a6 !important;
+}
+
+footer button.bg-teal-500:hover,
+footer button.bg-teal-600:hover {
+  background-color: #0d9488 !important;
+}
+
+/* Left Sidebar Improvements */
+#nav-sidebar {
+  width: 230px !important;
+  background: linear-gradient(to bottom, #0f766e, #065f46) !important;
+  padding-top: 0 !important;
+}
+
+/* Logo container styling */
+#nav-sidebar > div:first-child {
+  padding: 0.75rem !important;
+}
+
+/* Logo image size reduction */
+#nav-sidebar img.w-full, 
+#nav-sidebar img[src*="Lieferspatz"],
+#nav-sidebar .logo {
+  max-width: 60px !important;
+  height: auto !important;
+  margin: 0 auto 0.25rem !important;
+}
+
+/* Lieferspatz text size fix */
+#nav-sidebar h1,
+#nav-sidebar .logo-text,
+#nav-sidebar img + div,
+#nav-sidebar h2 {
+  font-size: 1.1rem !important;
+  text-align: center !important;
+  letter-spacing: 0.5px !important;
+  font-weight: bold !important;
+  margin-top: 0.25rem !important;
+  color: #f3f4f6 !important;
+}
+
+/* Improve user info section */
+#nav-sidebar .user-info {
+  background-color: rgba(0, 0, 0, 0.2) !important;
+  border-radius: 0.5rem !important;
+  margin: 0.4rem 0.75rem !important;
+  padding: 0.6rem !important;
+}
+
+#nav-sidebar .user-info p {
+  font-size: 0.8rem !important;
+  margin-bottom: 0.2rem !important;
+}
+
+/* Navigation section headers */
+#nav-sidebar .section-title {
+  font-size: 0.7rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+  margin: 1rem 0 0.375rem 1.25rem !important;
+}
+
+/* Navigation links */
+#nav-sidebar nav a {
+  padding: 0.5rem 1.25rem !important;
+  font-size: 0.875rem !important;
+  transition: background-color 0.2s ease !important;
+  margin-bottom: 0.375rem !important;
+}
+
+/* Adjust for mobile */
+@media (max-width: 640px) {
+  #nav-sidebar {
+    width: 210px !important;
+  }
+  
+  #nav-sidebar img.w-full,
+  #nav-sidebar img[src*="Lieferspatz"] {
+    max-width: 50px !important;
+  }
+  
+  #nav-sidebar nav a {
+    padding: 0.4rem 1rem !important;
+  }
+} 
+
+/* Restaurant grid styling */
+#restaurant-list {
+  margin-top: 1.5rem;
+}
+
+/* Enhanced restaurant card styling */
+.restaurant-card {
+  position: relative;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-decoration: none !important;
+  color: inherit !important;
+  border: 1px solid #e5e7eb;
+}
+
+.restaurant-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(to right, #0d9488, #14b8a6);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease-out;
+}
+
+.restaurant-card:hover::after {
+  transform: scaleX(1);
+}
+
+.restaurant-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.restaurant-photo-container {
+  width: 100%;
+  height: 160px;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.restaurant-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: all 0.3s ease;
+}
+
+.restaurant-card:hover .restaurant-photo {
+  transform: scale(1.05);
+}
+
+.restaurant-details {
+  padding: 1rem;
+  text-align: left;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.restaurant-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.restaurant-location {
+  color: #6b7280;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.restaurant-location svg {
+  margin-right: 0.375rem;
+  flex-shrink: 0;
+}
+
+.restaurant-rating {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.rating-pill {
+  background-color: #f3f4f6;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  display: flex;
+  align-items: center;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.restaurant-card:hover .rating-pill {
+  background-color: #fef9c3;
+  border-color: #fef08a;
+}
+
+.star-icon {
+  color: #f59e0b;
+  margin-right: 0.25rem;
+}
+
+.restaurant-card:hover .star-icon {
+  color: #eab308;
+}
+
+.rating-count {
+  color: #9ca3af;
+  font-size: 0.75rem;
+  margin-left: 0.25rem;
+}
+
+.view-menu-btn {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  font-weight: 500;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+  margin-top: auto;
+  width: 100%;
+  text-align: center;
+  outline: none;
+  border: none;
+  cursor: pointer;
+}
+
+.view-menu-btn:hover {
+  background-color: #e5e7eb;
+  transform: translateY(-2px);
+}
+
+.view-menu-btn:focus {
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.5);
+}
+
+.restaurant-closed-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  opacity: 0.95;
+}
+
+.closed-indicator {
+  background-color: #ef4444;
+  color: white;
+  font-weight: 500;
+  padding: 0.5rem 1.25rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transform: translateY(0);
+  transition: transform 0.3s ease;
+}
+
+.restaurant-card:hover .closed-indicator {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+.closed-indicator svg {
+  margin-right: 0.5rem;
+  color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .restaurant-photo-container {
+    height: 140px;
+  }
+  
+  .restaurant-name {
+    font-size: 1rem;
+  }
+}
+
+/* Top offer badge */
+.top-offer-badge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #ef4444;
+  color: white;
+  padding: 0.25rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.top-offer-badge svg {
+  width: 16px;
+  height: 16px;
+  margin-right: 0.25rem;
+}
+
+/* Delivery info */
+.delivery-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.delivery-fee {
+  display: flex;
+  align-items: center;
+  color: #6b7280;
+}
+
+.delivery-fee svg {
+  margin-right: 0.25rem;
+  color: #9ca3af;
+}
+
+.delivery-time {
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+}
+
+/* Favorite button */
+.favorite-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background-color: white;
+  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.favorite-btn svg {
+  color: #9ca3af;
+  transition: all 0.2s ease;
+}
+
+.favorite-btn:hover svg {
+  color: #ef4444;
+}
+
+.favorite-btn.active svg {
+  color: #ef4444;
+  fill: #ef4444;
+}
+
+/* Fix for cart grid visibility */
+.cart-grid,
+#cart-items,
+.checkout-content div[class*="grid"],
+form[action*="checkout"] .grid,
+.grid.grid-cols-1.md\:grid-cols-2.lg\:grid-cols-3 {
+  position: relative !important;
+  z-index: 30 !important;
+  background-color: white !important;
+  display: grid !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.cart-item,
+.cart-grid > div,
+#cart-items > div,
+.grid.grid-cols-1.md\:grid-cols-2.lg\:grid-cols-3 > div {
+  background-color: white !important;
+  border-radius: 0.5rem !important;
+  border: 1px solid #e5e7eb !important;
+  padding: 1rem !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.2s ease !important;
+  position: relative !important;
+  z-index: 2 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.cart-item:hover,
+.cart-grid > div:hover,
+#cart-items > div:hover,
+.grid.grid-cols-1.md\:grid-cols-2.lg\:grid-cols-3 > div:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Force any hidden cart elements to show */
+[class*="cart"] {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Ensure cart sidebar is visible when active */
+body.cart-open #cart-sidebar {
+  transform: translateX(0) !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: block !important;
+}
+
+/* Add a delay to ensure CSS is applied after page load */
+@keyframes delayedFadeIn {
+  0% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+#cart-items,
+.grid.grid-cols-1.md\:grid-cols-2.lg\:grid-cols-3,
+.checkout-content {
+  animation: delayedFadeIn 0.5s ease-in-out 0.2s forwards !important;
+} 

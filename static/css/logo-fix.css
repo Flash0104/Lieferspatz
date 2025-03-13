@@ -1,0 +1,172 @@
+/* 
+ * EMERGENCY FIX FOR LIEFERSPATZ LOGO
+ * This file targets and eliminates the large orange logo issue
+ */
+
+/* Direct targeting of the large orange Lieferspatz logo */
+img[src*="Lieferspatz.png"], 
+img[src*="lieferspatz.png"],
+[style*="Lieferspatz.png"],
+[style*="lieferspatz.png"] {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    position: absolute !important;
+    left: -9999px !important;
+    top: -9999px !important;
+    width: 0 !important;
+    height: 0 !important;
+    max-width: 0 !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Target any elements that might contain the logo */
+body > div:first-child > img,
+body > div:first-child > div > img,
+body > img:first-child,
+body > img:first-of-type,
+body > div > img[width="500"],
+body > div > img[height="500"],
+img[width="500"],
+img[height="500"],
+img[style*="orange"],
+img[style*="background"],
+.logo-large,
+.large-logo,
+.brand-logo-lg,
+.background-logo {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+/* Create white overlay to cover any persistent elements - WITH AN EVEN LOWER z-index */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #f3f4f6; 
+    z-index: -1; /* Lowered from 1 to -1 to ensure it doesn't cover header */
+    pointer-events: none;
+}
+
+/* Make sure main content is above overlay */
+main, 
+.content,
+#content,
+.main-content,
+#main-content,
+.container,
+[class*="container"],
+.bg-white,
+.card,
+.grid,
+#cart-sidebar,
+#cart-items,
+.cart-item,
+#restaurant-list,
+.checkout-content,
+.p-6 {
+    position: relative;
+    z-index: 10;
+    background-color: #f3f4f6;
+}
+
+/* Ensure cart elements are always visible */
+#cart-sidebar,
+#cart-items,
+.cart-item,
+[class*="cart"],
+.checkout-content,
+form[action*="checkout"],
+form[action*="cart"],
+div[class*="grid"] {
+    position: relative;
+    z-index: 20 !important;
+}
+
+/* Fix header positioning and styling */
+header,
+.header,
+#header,
+nav.fixed,
+nav.sticky {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 1000 !important;
+    background: linear-gradient(to right, #0d9488, #0f766e) !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Ensure header container has proper spacing */
+header .container {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0.5rem 1rem !important;
+    height: auto !important;
+    min-height: 60px !important;
+    z-index: 1001 !important;
+    position: relative !important;
+}
+
+/* Fix body padding for fixed header */
+body {
+    padding-top: 60px !important;
+    background-color: #f3f4f6 !important;
+}
+
+/* Ensure restaurant grid is displayed properly */
+#restaurant-list,
+.restaurant-grid,
+.grid {
+    position: relative;
+    z-index: 20;
+} 
+
+/* Improve visibility of header elements */
+header .text-white,
+header a,
+header button,
+header svg,
+header .welcome-message,
+#location-input,
+.container > * {
+    z-index: 1002 !important;
+    position: relative !important;
+    visibility: visible !important;
+}
+
+/* Fix spacing in header elements */
+header .flex.items-center.space-x-4 {
+    gap: 0.75rem !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* Ensure #sidebar-toggle is visible */
+#sidebar-toggle {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    visibility: visible !important;
+}
+
+/* Fix cart button */
+#cart-btn {
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 1002 !important;
+} 

@@ -5,37 +5,199 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ restaurant.name }} - Menu</title>
     <link rel="stylesheet" href="/static/css/tailwind.css">
+    <style>
+        body {
+            background-color: #f3f4f6;
+        }
+        
+        .menu-item {
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .menu-item:hover {
+            transform: translateY(-3px);
+        }
+        
+        .deliveryBadge {
+            background-color: #d1fae5;
+            color: #065f46;
+            border-radius: 9999px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
+<body class="min-h-screen">
     <!-- Header -->
-    <header class="bg-teal-600 text-white py-4 px-8 flex justify-between items-center">
+    <header class="bg-gradient-to-r from-teal-400 to-teal-600 text-white py-4 px-8 flex justify-between items-center shadow-md">
         <h1 class="text-2xl font-bold">{{ restaurant.name }}</h1>
-        <a href="/" class="bg-white text-teal-600 px-4 py-2 rounded-lg">Home</a>
+        <div class="flex items-center space-x-4">
+            <a href="/" class="bg-white text-teal-600 px-4 py-2 rounded-lg hover:bg-gray-100 transition">Home</a>
+            <div class="relative">
+                <button id="cart-btn" class="bg-white text-teal-600 px-4 py-2 rounded-lg flex items-center hover:bg-gray-100 transition">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="mr-2">
+                        <path fill-rule="evenodd" clip-rule="evenodd"
+                            d="M5.5 18H21l2-12.5H6.5l-.5-3H.9v3h2.5L5.5 18Zm14-9.5-1 6.5H8L7 8.5h12.5ZM7.5 23a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm14-2a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"
+                            fill="currentColor"></path>
+                    </svg>
+                    Cart
+                </button>
+                <span id="cart-bubble" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
+            </div>
+        </div>
     </header>
 
     <!-- Restaurant Details -->
-    <section class="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6 mt-6">
-        <h2 class="text-xl font-semibold">{{ restaurant.name }}</h2>
-        <p class="text-gray-600">{{ restaurant.address }}</p>
+    <section class="max-w-6xl mx-auto bg-white shadow-md rounded-lg p-6 mt-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+            <div>
+                <h2 class="text-xl font-semibold">{{ restaurant.name }}</h2>
+                <p class="text-gray-600">{{ restaurant.address }}</p>
+                
+                <!-- Restaurant Rating -->
+                <div class="flex items-center mt-2">
+                    {% if restaurant.ratings|length > 0 %}
+                        <span class="text-lg font-semibold">{{ "%.1f"|format(restaurant.rating) }}</span>
+                        <span class="text-lg text-yellow-500 mx-1">★</span>
+                        <span class="text-sm text-gray-600">({{ restaurant.ratings|length }})</span>
+                    {% else %}
+                        <span class="text-sm text-gray-500">No ratings yet</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="mt-4 md:mt-0 flex flex-col md:flex-row items-end gap-3">
+                <span class="deliveryBadge">
+                    0 € Liefergebühr
+                </span>
+                <span class="text-sm text-gray-500">
+                    Estimated delivery: 20-35 Min.
+                </span>
+            </div>
+        </div>
     </section>
 
     <!-- Menu List -->
-    <section class="max-w-4xl mx-auto mt-6">
-        <h2 class="text-xl font-bold text-gray-900 mb-4">Menu</h2>
-        <div id="menu-container" class="grid grid-cols-2 gap-6">
+    <section class="max-w-6xl mx-auto mt-6 pb-20">
+        <h2 class="text-2xl font-bold text-gray-900 mb-8 text-center">Menu</h2>
+        <div id="menu-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {% for item in menu_items %}
-            <div class="bg-white rounded-lg shadow-md p-4">
-                <img src="{{ item.image_url }}" alt="{{ item.name }}" class="w-24 h-24 object-cover rounded-lg">
-                <h3 class="text-lg font-semibold">{{ item.name }}</h3>
-                <p class="text-gray-600">{{ item.description }}</p>
-                <p class="text-green-600 font-bold">${{ item.price }}</p>
-                <button class="add-to-cart bg-teal-600 text-white px-4 py-2 rounded-lg mt-2" data-id="{{ item.id }}">
-                    Add to Cart
-                </button>
+            <div class="p-4 bg-white shadow-md rounded-2xl hover:shadow-lg transition flex flex-col justify-between h-full menu-item">
+                <div>
+                    <img src="{{ item.image_url }}" alt="{{ item.name }}" class="w-full h-36 object-cover rounded-lg mb-4">
+                    <h3 class="text-lg font-semibold">{{ item.name }}</h3>
+                    {% if item.description %}
+                    <p class="text-gray-600 mt-2 text-sm">{{ item.description }}</p>
+                    {% endif %}
+                </div>
+                <div class="mt-4">
+                    <p class="text-green-600 font-bold mb-2">€{{ item.price }}</p>
+                    <button class="add-to-cart w-full bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition" data-id="{{ item.id }}">
+                        Add to Cart
+                    </button>
+                </div>
             </div>
             {% endfor %}
         </div>
     </section>
+
+    <!-- Cart Overlay -->
+    <div id="cart-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40" style="cursor: pointer;"></div>
+         
+    <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-lg z-50 flex flex-col">
+        <div class="flex justify-between items-center p-4 border-b sticky top-0 bg-white z-10">
+            <h2 class="text-xl font-bold">Your Cart</h2>
+            <button id="close-cart" class="text-gray-700 hover:text-red-600 p-2 rounded-full hover:bg-gray-100 transition-colors" style="cursor: pointer; font-size: 24px; z-index: 9999;" onclick="return forceCloseCart(event);">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        
+        <div id="cart-items" class="flex-1 overflow-y-auto flex flex-col p-4">
+            <!-- Cart items will be loaded here -->
+            <p class="text-gray-500 text-center py-8">Your cart is empty.</p>
+        </div>
+    </div>
+
+    <!-- Add emergency script to ensure cart is properly initialized -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("Restaurant menu initialization");
+        
+        // DIRECT NUCLEAR FORCE CLOSE FUNCTION
+        window.forceCloseCart = function(event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            console.log("🔥 NUCLEAR FORCE CLOSE from restaurant_menu direct handler 🔥");
+            
+            // 1. Try global function first
+            if (typeof window.closeCart === 'function') {
+                window.closeCart(event);
+            }
+            
+            // 2. Direct element targeting
+            const sidebar = document.getElementById('cart-sidebar');
+            const overlay = document.getElementById('cart-overlay');
+            
+            if (sidebar) {
+                sidebar.classList.remove('visible');
+                sidebar.removeAttribute('style');
+                sidebar.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; position: absolute !important; left: -9999px !important; right: 9999px !important;';
+            }
+            
+            if (overlay) {
+                overlay.classList.remove('visible');
+                overlay.removeAttribute('style');
+                overlay.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;';
+            }
+            
+            // 3. Nuclear option - replace with invisible clones
+            setTimeout(function() {
+                if (sidebar && sidebar.parentNode) {
+                    const clone = sidebar.cloneNode(false);
+                    clone.style.display = 'none';
+                    sidebar.parentNode.replaceChild(clone, sidebar);
+                }
+                
+                if (overlay && overlay.parentNode) {
+                    const clone = overlay.cloneNode(false);
+                    clone.style.display = 'none';
+                    overlay.parentNode.replaceChild(clone, overlay);
+                }
+                
+                // 4. Restore body scrolling
+                document.body.style.overflow = '';
+                document.documentElement.style.overflow = '';
+                
+                console.log("Nuclear force close completed");
+            }, 10);
+            
+            return false;
+        };
+        
+        // Ensure cart button works
+        const cartBtn = document.getElementById('cart-btn');
+        if (cartBtn) {
+            cartBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log("Cart button clicked from restaurant page");
+                if (typeof window.openCart === 'function') {
+                    window.openCart();
+                } else {
+                    console.error("openCart function not found!");
+                    // Emergency direct implementation
+                    document.getElementById('cart-sidebar').style.display = 'block';
+                    document.getElementById('cart-overlay').style.display = 'block';
+                }
+                return false;
+            });
+        }
+    });
+    </script>
 
     <script src="/static/js/restaurant.js"></script>
 </body>
